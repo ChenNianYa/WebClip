@@ -1,4 +1,4 @@
-import BaseSource from "../class/BaseSource"
+import BaseSource from "../classes/source/BaseSource"
 
 export interface BaseSourceOption {
     name: string

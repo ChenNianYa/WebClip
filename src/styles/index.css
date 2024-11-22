@@ -1,13 +1,14 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-html,body,#root{
+
+html,body,#app{
     height: 100%;
 }
 
 :root{
-    --left-element-width: 300px;
-    --right-config-width: 300px;
+    --left-element-width: 350px;
+    --right-config-width: 350px;
     /* 主颜色 */
     --primary-1:rgb(31,31,31);
     /* 边框颜色 */

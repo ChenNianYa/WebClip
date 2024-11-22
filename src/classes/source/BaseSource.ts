@@ -1,4 +1,5 @@
-import { BaseSourceOption } from "../types/class-option-types"
+import { BaseSourceOption } from "@/types/source-option-types"
+
 class BaseSource {
     static _id = 1
     name!: string

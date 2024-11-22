@@ -1,13 +1,17 @@
-import { ImageSourceOption } from "../types/class-option-types";
+import { VideoSourceOption } from "@/types/source-option-types";
 import BaseSource from "./BaseSource";
 
-class ImageSource extends BaseSource {
+class VideoSource extends BaseSource {
     id!: number
+    duration!: number
+    cover!: string
     src!: string
     width!: number
     height!: number
-    constructor(option: ImageSourceOption) {
+    constructor(option: VideoSourceOption) {
         super(option)
+        this.duration = option.duration
+        this.cover = option.cover
         this.src = option.src
         this.id = BaseSource._id
         this.width = option.width
@@ -16,4 +20,4 @@ class ImageSource extends BaseSource {
     }
 }
 
-export default ImageSource
+export default VideoSource
