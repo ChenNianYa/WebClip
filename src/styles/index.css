@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+html,body,#root{
+    height: 100%;
+}
+
+:root{
+    --left-element-width: 300px;
+    --right-config-width: 300px;
+    /* 主颜色 */
+    --primary-1:rgb(31,31,31);
+    /* 边框颜色 */
+    --primary-border:rgb(49,50,50);
+    /* 轨道高度 */
+    --track-height:200px;
+    /* 控制区高度 */
+    --control-height:80px;
+}
