@@ -1,10 +1,12 @@
 <template>
     <FileSelect :accept="{ 'video/mp4': ['.mp4'] }" text="选择需要上传的视频" @select-file="getVideoSource" class="mb-2" />
-    <VideoList :list="videoList" @delete="onDelete" />
+    <VideoList :list="videoList" @delete="onDelete" @add-track="onAddTrack" />
 </template>
 <script setup lang="ts">
+import VideoElement from '@/classes/element/VideoElement';
 import VideoSource from '@/classes/source/VideoSource';
-
+import useVideoElementStore from '@/store/useVideoElementStore';
+const videoElememtStore = useVideoElementStore()
 const videoList = ref<VideoSource[]>([])
 const getVideoSource = async (videoBlob: File) => {
     const video = document.createElement('video');
@@ -46,5 +48,16 @@ const getVideoSource = async (videoBlob: File) => {
 }
 const onDelete = (id: number) => {
     videoList.value = videoList.value.filter(v => v.id !== id)
+}
+const onAddTrack = (id: number) => {
+    // 将source转化成element 加入到clip中
+    const videoSource = videoList.value.find(v => v.id === id)
+    if (!videoSource) return
+    const videoElement = new VideoElement({
+        width: videoSource.width,
+        height: videoSource.height,
+        source: videoSource
+    })
+    videoElememtStore.addVideoElement(videoElement)
 }
 </script>

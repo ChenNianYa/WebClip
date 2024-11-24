@@ -18,4 +18,5 @@ export type ImageSourceOption = {
     src: string
     width: number
     height: number
+    image: InstanceType<typeof Image>
 } & BaseSource

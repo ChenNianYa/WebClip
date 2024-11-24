@@ -10,19 +10,17 @@ const props = defineProps<{
     text: string
 }>()
 const chooseFile = async () => {
+    let fileHandle
     try {
         // @ts-ignore
-        const [fileHandle] = await window.showOpenFilePicker({
+        const res = await window.showOpenFilePicker({
             types: [
                 {
                     accept: props.accept,
                 },
             ],
         });
-        if (fileHandle) {
-            const file = await fileHandle.getFile()
-            emits('select-file', file)
-        }
+        fileHandle = res[0]
     } catch (error) {
         // @ts-ignore
         if (error.name === "AbortError") {
@@ -31,5 +29,9 @@ const chooseFile = async () => {
             console.error("出现错误：", error);
         }
     }
+    if (!fileHandle) return
+    const handle: FileSystemFileHandle = fileHandle
+    const file = await handle.getFile()
+    emits('select-file', file)
 }
 </script>

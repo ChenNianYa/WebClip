@@ -14,7 +14,7 @@ html,body,#app{
     /* 边框颜色 */
     --primary-border:rgb(49,50,50);
     /* 轨道高度 */
-    --track-height:200px;
+    --track-height:300px;
     /* 控制区高度 */
     --control-height:80px;
 }

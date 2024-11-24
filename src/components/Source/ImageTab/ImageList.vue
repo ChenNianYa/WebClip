@@ -12,7 +12,7 @@
                 </el-text>
             </el-tooltip>
             <div class="flex justify-between w-full mt-2">
-                <el-button size="small">加入轨道</el-button>
+                <el-button size="small" @click="emits('add-track', image.id)">加入轨道</el-button>
                 <el-button size="small" type='danger' @click="emits('delete', image.id)">删除</el-button>
             </div>
         </el-card>
@@ -23,6 +23,7 @@ import ImageSource from '@/classes/source/ImageSource';
 
 const emits = defineEmits<{
     (e: 'delete', id: number): void
+    (e: 'add-track', id: number): void
 }>()
 const props = withDefaults(defineProps<{
     list: ImageSource[]

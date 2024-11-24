@@ -6,23 +6,34 @@
     </div>
     <!-- 工作台区域 -->
     <div class="flex-1 border-r border-primary-border flex flex-col">
-      <!-- 预览区域 -->
-      <div class="flex-1">
-        <Preview />
+      <div class="flex-1 flex">
+        <!-- 预览区域 -->
+        <div class="flex-1 border-r border-primary-border">
+          <Preview />
+        </div>
+        <!-- 配置区 -->
+        <div class="w-right shrink-0">
+          <Config />
+        </div>
       </div>
       <!-- 控制区域 -->
-      <div class="border-t border-primary-border h-control">
-        <Control />
-      </div>
-      <!-- 轨道区域 -->
-      <div class="border-t border-primary-border h-track">
-        <Track />
+      <div class="flex">
+        <div class="flex-1">
+          <div class="border-t border-primary-border h-control">
+            <Control />
+          </div>
+          <!-- 轨道区域 -->
+          <div class="border-t border-primary-border h-track">
+            <Track />
+          </div>
+        </div>
+        <!-- 选中轨道上元素的信息区域 -->
+        <div class="w-right shrink-0 border-l border-t border-primary-border">
+          <Info />
+        </div>
       </div>
     </div>
-    <!-- 配置区 -->
-    <div class="w-right shrink-0">
-      <Config />
-    </div>
+
   </div>
 </template>
 <script setup lang="ts">

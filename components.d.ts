@@ -19,6 +19,7 @@ declare module 'vue' {
     FileSelect: typeof import('./src/components/FileSelect/index.vue')['default']
     ImageList: typeof import('./src/components/Source/ImageTab/ImageList.vue')['default']
     ImageTab: typeof import('./src/components/Source/ImageTab/index.vue')['default']
+    Info: typeof import('./src/components/Info/index.vue')['default']
     Preview: typeof import('./src/components/Preview/index.vue')['default']
     Source: typeof import('./src/components/Source/index.vue')['default']
     Track: typeof import('./src/components/Track/index.vue')['default']
