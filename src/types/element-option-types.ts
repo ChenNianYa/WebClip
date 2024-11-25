@@ -10,6 +10,7 @@ import VideoSource from "@/classes/source/VideoSource";
 export interface BaseElementOption {
     width: number;
     height: number;
+    duration?: number;
     x?: number;
     y?: number;
     rotateDeg?: number

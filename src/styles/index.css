@@ -1,14 +1,18 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 html,body,#app{
     height: 100%;
 }
 
 :root{
-    --left-element-width: 350px;
-    --right-config-width: 350px;
+    --left-element-width: 350;
+    --right-config-width: 350;
     /* 主颜色 */
     --primary-1:rgb(31,31,31);
     /* 边框颜色 */

@@ -12,7 +12,9 @@ export default defineConfig({
     AutoImport({
       imports: ["vue"],
       dts: true,
-      resolvers: [ElementPlusResolver()]
+      resolvers: [
+        ElementPlusResolver(),
+      ]
     }),
     Components({
       dirs: ['src/components/'],

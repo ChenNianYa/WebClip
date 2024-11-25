@@ -6,7 +6,11 @@ export const secondsToTimeFormat = (seconds: number): string => {
     totalSeconds %= 3600;
     const minutes = Math.floor(totalSeconds / 60);
     const remainingSeconds = totalSeconds % 60;
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    let timeFormat = `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    if (hours > 0) {
+        timeFormat = `${hours.toString().padStart(2, '0')}:${timeFormat}`;
+    }
+    return timeFormat;
 }
 // b 转化成 B MB GB
 export const formatBytesToUnit = (bytes: number): string => {

@@ -1,6 +1,8 @@
 import { BaseElementOption } from "@/types/element-option-types"
 
 class BaseElement {
+    static _id = 0
+    id!: number
     width!: number
     height!: number
     x!: number
@@ -8,7 +10,9 @@ class BaseElement {
     rotateDeg!: number
     scale!: number
     level!: number
-    constructor({ width, height, x = 0, y = 0, rotateDeg = 0, scale = 1, level = 1 }: BaseElementOption) {
+    duration!: number
+    startTime!: number
+    constructor({ width, height, x = 0, y = 0, rotateDeg = 0, scale = 1, level = 1, duration = 5 }: BaseElementOption) {
         this.width = width
         this.height = height
         this.x = x
@@ -16,6 +20,9 @@ class BaseElement {
         this.rotateDeg = rotateDeg
         this.scale = scale
         this.level = level
+        this.duration = duration
+        this.id = BaseElement._id++
+        this.startTime = 0;
     }
     getRectPoint(): [[number, number], [number, number], [number, number], [number, number]] {
         const centerX = this.x + this.width / 2;

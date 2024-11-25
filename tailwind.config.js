@@ -13,8 +13,8 @@ export default {
         'primary-border':'var(--primary-border)'
       },
       width:{
-        'left':'var(--left-element-width)',
-        'right':'var(--right-config-width)'
+        'left':'calc(var(--left-element-width)*1px)',
+        'right':'calc(var(--right-config-width)*1px)'
       },
       height:{
         'control':'var(--control-height)',

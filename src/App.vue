@@ -1,14 +1,14 @@
 <template>
   <div class="flex h-full bg-primary-1 text-gray-300">
     <!-- 素材区域 -->
-    <div class="w-left border-r border-primary-border shrink-0 px-2">
+    <div class="w-left border-r border-primary-border shrink-0 px-2 flex-1 overflow-hidden">
       <Source />
     </div>
     <!-- 工作台区域 -->
     <div class="flex-1 border-r border-primary-border flex flex-col">
       <div class="flex-1 flex">
         <!-- 预览区域 -->
-        <div class="flex-1 border-r border-primary-border">
+        <div class="flex-1 border-r border-primary-border p-4">
           <Preview />
         </div>
         <!-- 配置区 -->
@@ -19,11 +19,11 @@
       <!-- 控制区域 -->
       <div class="flex">
         <div class="flex-1">
-          <div class="border-t border-primary-border h-control">
+          <div class="border-t border-primary-border h-control px-4">
             <Control />
           </div>
           <!-- 轨道区域 -->
-          <div class="border-t border-primary-border h-track">
+          <div class="border-t border-primary-border h-track p-4">
             <Track />
           </div>
         </div>
