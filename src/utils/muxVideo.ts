@@ -4,6 +4,9 @@ import { ElementsMap } from "@/types/element-option-types";
 // @ts-ignore
 import MP4Box from 'mp4box'
 const DataStream = MP4Box.DataStream
+const indexDbWorker = new Worker(new URL('./indexdb-storage.js', import.meta.url))
+const indexDbStorageFrame = 'storage-frame'
+const indexDbGetFrame = 'get-frame'
 const muxVideo = async (elemntsMap: ElementsMap, writableStream: FileSystemWritableFileStream) => {
     console.log('muxVideo');
 
@@ -26,50 +29,36 @@ const muxClip = async (video: VideoElement, images: ImageElement[], writableStre
     const ctx = canvas.getContext('2d')
     if (!ctx) return
     let nbSampleTotal: number = 0
-    // indexdb  存生成的videoFrame---------------------------------------------------------------
-    // let indexDb: IDBDatabase
-    const storeName = 'frames'
-    const videoFramesIndexDbDeleteRequest = new Promise((resolve) => {
-        const request = window.indexedDB.deleteDatabase("video-frames");
-        request.onsuccess = resolve
-        request.onerror = resolve
-    })
-    await videoFramesIndexDbDeleteRequest
-    const videoFramesIndexDbRequest = window.indexedDB.open("video-frames", 1);
-    const indexDbPromise = new Promise<IDBDatabase>((resolve) => {
-        videoFramesIndexDbRequest.onsuccess = () => {
-            resolve(videoFramesIndexDbRequest.result)
-        }
-        videoFramesIndexDbRequest.onupgradeneeded = () => {
-            const store = videoFramesIndexDbRequest.result.createObjectStore(storeName, {
-                keyPath: 'index',
-            })
-            store.createIndex('index', 'index', { unique: true })
-            resolve(videoFramesIndexDbRequest.result)
-        }
-    })
-    const indexDb = await indexDbPromise
+    // webworker + indexdb  存储生成的videoFrame---------------------------------------------------------------
+    indexDbWorker.onmessage = (e) => {
+        /**
+         * videoDecoder.decodeQueueSize === 0  decode队列没有任务了
+         * videoDecoder.state === 'configured' videoDecoder 还存在没有被关闭
+         * e.data.index === (decodedVideoFrameCount - 1)  这里需要限制一下，只有当前帧数存满了，才开始下一次存储，不然内存会爆
+         */
+        if (e.data.type === indexDbStorageFrame) {
+            if (videoDecoder.decodeQueueSize === 0 && videoDecoder.state === 'configured' && e.data.index === (decodedVideoFrameCount - 1)) {
+                if (countSample === nbSampleTotal) {
+                    console.log('decoder over');
+                    // 这里应该decoderFile 置为空
+                    decoderFile.stream.cleanBuffers()
+                    videoDecoder.close()
+                    encoderVideo()
 
-    const addVideoFrameToIndexDb = (index: number, value: Blob, timestamp: number) => {
-        return new Promise((resolve) => {
-            const request = indexDb.transaction([storeName], 'readwrite').objectStore(storeName).add({ index, value, timestamp })
-            request.onsuccess = (e) => { resolve(e) }
-        })
-    }
-    const getVideoFrameFromIndexDb = (index: number) => {
-        return new Promise<VideoFrame>((resolve) => {
-            const request = indexDb.transaction([storeName]).objectStore(storeName).get(index);
-            request.onsuccess = async () => {
-                if (request.result) {
-                    const ibmp = await createImageBitmap(request.result.value)
-                    const videoFrame = new VideoFrame(ibmp, { timestamp: request.result.timestamp })
-                    ibmp.close()
-                    resolve(videoFrame)
+                } else {
+                    decoderFile.start()
                 }
-            };
-        })
+            }
+        }
+        if (e.data.type === indexDbGetFrame) {
+            if (e.data.index < decodedVideoFrameCount) {
+                indexDbWorker.postMessage({ type: indexDbGetFrame, index: e.data.index + 1 })
+                videoEncoder.encode(e.data.value)
+                console.log('encoder', e.data.index);
+                e.data.value.close()
+            }
+        }
     }
-    console.log('indexbd ready');
     // ----------------------------------------------------------------------------------
     let videoDuration: number
     let videoFramerate: number
@@ -100,11 +89,16 @@ const muxClip = async (video: VideoElement, images: ImageElement[], writableStre
 
             encodedVideoFrameCount++
             if (encodedVideoFrameCount === decodedVideoFrameCount) {
+                console.log('mux over');
+                console.log(encoderFile);
+                console.log('buffer');
                 const buffer = await encoderFile.getBuffer();
+                console.log(encoderFile);
+                // encoderFile.cleanBuffers()
                 let e = new Blob([buffer]);
                 await writableStream.write(e)
                 await writableStream.close()
-                console.log('mux over');
+                // console.log('mux over');
             }
         },
         error: (err) => {
@@ -112,11 +106,15 @@ const muxClip = async (video: VideoElement, images: ImageElement[], writableStre
         }
     })
     const encoderVideo = async () => {
-        for (let i = 0; i < decodedVideoFrameCount; i++) {
-            const vf = await getVideoFrameFromIndexDb(i)
-            videoEncoder.encode(vf)
-            vf.close()
-        }
+        console.log('start encoder');
+        if (decodedVideoFrameCount === 0) return
+        indexDbWorker.postMessage({ type: indexDbGetFrame, index: 0 })
+        // for (let i = 0; i < decodedVideoFrameCount; i++) {
+        //     videoEncoder.encode()
+        //     // const vf = await getVideoFrameFromIndexDb(i)
+        //     // videoEncoder.encode(vf)
+        //     // vf.close()
+        // }
     }
     console.log('encoder ready');
     // decoder 部分 ------------------------------------------------------------------------------
@@ -127,33 +125,17 @@ const muxClip = async (video: VideoElement, images: ImageElement[], writableStre
         output: async (videoFrame) => {
             ctx.clearRect(0, 0, videoW, videoH)
             ctx.drawImage(videoFrame, 0, 0, videoW, videoH)
+            videoFrame.close()
             for (const img of images) {
                 ctx.drawImage(img.source.image, 0, 0, img.source.width / 5, img.source.height / 5)
             }
-            const blob = await canvas.convertToBlob()
-            // showctx?.drawImage(canvas, 0, 0, videoW, videoH)
-            let timestamp = videoFrameDurationInMicrosecond * decodedVideoFrameCount;
-            // 可以用webworker去做
-            await addVideoFrameToIndexDb(decodedVideoFrameCount, blob, timestamp)
-            // const encodeVideoFrame = new VideoFrame(showCanvas, { timestamp: timestamp })
-            // const buffer = new ArrayBuffer(encodeVideoFrame.allocationSize())
-            // encodeVideoFrame.copyTo(buffer)
-            // await addVideoFrameToIndexDb(decodedVideoFrameCount, buffer)
-            // encodeVideoFrame.close()
+            // 采用 transferToImageBitmap 不用blob时因为blob太慢了
+            const ibm = canvas.transferToImageBitmap()
+            showctx?.drawImage(ibm, 0, 0, videoW, videoH)
+            const timestamp = videoFrameDurationInMicrosecond * decodedVideoFrameCount;
+            // webworker + indexdb 存储大数据
+            indexDbWorker.postMessage({ index: decodedVideoFrameCount, value: ibm, timestamp, type: indexDbStorageFrame })
             decodedVideoFrameCount++
-            // ibmp.close()
-            videoFrame.close()
-            if (videoDecoder.decodeQueueSize === 0 && videoDecoder.state === 'configured') {
-                if (countSample === nbSampleTotal) {
-                    console.log('decoder over');
-                    // 这里应该decoderFile 置为空
-                    decoderFile.stream.cleanBuffers()
-                    videoDecoder.close()
-                    encoderVideo()
-                } else {
-                    decoderFile.start()
-                }
-            }
         },
         error: (e) => {
             console.log("webcodec.VideoDecoder error : ", e);
@@ -231,10 +213,6 @@ const muxClip = async (video: VideoElement, images: ImageElement[], writableStre
     const chunkSize = 1024 * 1024 * 10;
     let start = 0;
     const resolveVideo = async () => {
-        // const buffer = await video.source.file.arrayBuffer()
-        // buffer.fileStart = start
-        // decoderFile.appendBuffer(buffer)
-        // decoderFile.flush()
         const end = start + chunkSize;
         const chunk = video.source.file.slice(start, end);
         const buffer = await chunk.arrayBuffer()
