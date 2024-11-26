@@ -2,5 +2,6 @@ export interface TrackItem {
     id: number,
     duration: number,
     startTime: number,
-    name: string
+    name: string,
+    stretchable: boolean
 }

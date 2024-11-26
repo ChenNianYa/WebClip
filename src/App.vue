@@ -1,7 +1,7 @@
 <template>
-  <div class="flex h-full bg-primary-1 text-gray-300">
+  <div class="flex h-full bg-primary-1 text-gray-300 overflow-hidden">
     <!-- 素材区域 -->
-    <div class="w-left border-r border-primary-border shrink-0 px-2 flex-1 overflow-hidden">
+    <div class="w-left border-r border-primary-border shrink-0 px-2 overflow-hidden">
       <Source />
     </div>
     <!-- 工作台区域 -->

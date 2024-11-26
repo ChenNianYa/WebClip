@@ -8,9 +8,10 @@
     </div> -->
     <!-- <x-gantt data-id="index" :data="dataList" /> -->
     <div>
-        <Timeline :data-list="list" :per-second-px="perSecondPx" :duration="clipStore.duration"
+        <Timeline v-show="list.length > 0" :data-list="list" :per-second-px="perSecondPx" :duration="clipStore.duration"
             @decrease-per-second-px="() => { if (perSecondPx > 10) { perSecondPx-- } }"
-            @add-per-second-px="() => { perSecondPx++ }" />
+            @add-per-second-px="() => { perSecondPx++ }" @update-track-row-start-time="clipStore.updateElemntStartTime"
+            @update-duration="clipStore.updateElementDuration" />
     </div>
 </template>
 <script setup lang="ts">
@@ -24,16 +25,18 @@ const list = computed<TrackItem[]>(() => {
         list.push({
             id: video.id,
             duration: video.duration,
-            startTime: 0,
-            name: video.source.name
+            startTime: video.startTime,
+            name: video.source.name,
+            stretchable: false,
         })
     }
     for (const image of clipStore.elements.images) {
         list.push({
             id: image.id,
             duration: image.duration,
-            startTime: 0,
-            name: image.source.name
+            startTime: image.startTime,
+            name: image.source.name,
+            stretchable: true
         })
     }
     return list

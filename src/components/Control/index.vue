@@ -2,9 +2,9 @@
     <!-- <el-button @click="clipStore.exportVideo">导出视频</el-button> -->
     <div class="flex items-center h-full">
         <!-- 没有素材的时候 -->
-        <div v-show="noElement">暂无素材</div>
+        <div v-if="noElement">暂无素材</div>
         <!-- 有素材的时候 -->
-        <div class="flex items-center justify-between w-full">
+        <div v-else class="flex items-center justify-between w-full">
             <div class="flex items-center flex-1 mr-10">
                 <el-icon :size="50" class="mr-4" @click="() => { playState = !playState }">
                     <VideoPlay v-show="!clipStore.playState" />

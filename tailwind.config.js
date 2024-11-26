@@ -8,6 +8,7 @@ export default {
     extend: {
       colors:{
         'primary-1':'var(--primary-1)',
+        'clip-cut-area-color':'var(--clip-cut-area-color)'
       },
       borderColor:{
         'primary-border':'var(--primary-border)'

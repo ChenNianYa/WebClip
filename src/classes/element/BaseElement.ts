@@ -1,7 +1,8 @@
 import { BaseElementOption } from "@/types/element-option-types"
 
 class BaseElement {
-    static _id = 0
+    // 从0开始可能存在 在判断时候当false了
+    static _id = 1
     id!: number
     width!: number
     height!: number

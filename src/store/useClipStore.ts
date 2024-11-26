@@ -3,23 +3,26 @@ import VideoElement from "@/classes/element/VideoElement";
 import ImageSource from "@/classes/source/ImageSource";
 import VideoSource from "@/classes/source/VideoSource";
 import { ElementsMap } from "@/types/element-option-types";
+import { ClipCut } from "@/types/utils";
 import muxVideo from "@/utils/muxVideo";
 import { defineStore } from "pinia";
 const mockerData: ElementsMap = {
-    videos: [
-        new VideoElement({ width: 1920, height: 1080, source: new VideoSource({ width: 1920, height: 1080, duration: 60 * 2.5, cover: '', src: '', name: 'video1.mp4', file: new Blob(), size: 256 }) }),
-        new VideoElement({ width: 1920, height: 1080, source: new VideoSource({ width: 1920, height: 1080, duration: 60 * 2.5, cover: '', src: '', name: 'video2.mp4', file: new Blob(), size: 256 }) }),
-        new VideoElement({ width: 1920, height: 1080, source: new VideoSource({ width: 1920, height: 1080, duration: 60 * 2.5, cover: '', src: '', name: 'video3.mp4', file: new Blob(), size: 256 }) }),
-        new VideoElement({ width: 1920, height: 1080, source: new VideoSource({ width: 1920, height: 1080, duration: 60 * 2.5, cover: '', src: '', name: 'video4.mp4', file: new Blob(), size: 256 }) }),
-        new VideoElement({ width: 1920, height: 1080, source: new VideoSource({ width: 1920, height: 1080, duration: 60 * 2.5, cover: '', src: '', name: 'video5.mp4', file: new Blob(), size: 256 }) }),
-        new VideoElement({ width: 1920, height: 1080, source: new VideoSource({ width: 1920, height: 1080, duration: 60 * 2.5, cover: '', src: '', name: 'video6.mp4', file: new Blob(), size: 256 }) }),
-        new VideoElement({ width: 1920, height: 1080, source: new VideoSource({ width: 1920, height: 1080, duration: 60 * 2.5, cover: '', src: '', name: 'video7.mp4', file: new Blob(), size: 256 }) }),
-        new VideoElement({ width: 1920, height: 1080, source: new VideoSource({ width: 1920, height: 1080, duration: 60 * 2.5, cover: '', src: '', name: 'video8.mp4', file: new Blob(), size: 256 }) })
-    ],
-    images: [
-        new ImageElement({ width: 200, height: 200, source: new ImageSource({ width: 1920, height: 1080, src: '', image: new Image(), name: 'img1.jpg', file: new Blob(), size: 256 }) }),
-        new ImageElement({ width: 200, height: 200, source: new ImageSource({ width: 1920, height: 1080, src: '', image: new Image(), name: 'img2.jpg', file: new Blob(), size: 256 }) })
-    ]
+    // videos: [
+    //     new VideoElement({ width: 1920, height: 1080, source: new VideoSource({ width: 1920, height: 1080, duration: 60, cover: '', src: '', name: 'video1.mp4', file: new Blob(), size: 256 }) }),
+    //     new VideoElement({ width: 1920, height: 1080, source: new VideoSource({ width: 1920, height: 1080, duration: 60, cover: '', src: '', name: 'video2.mp4', file: new Blob(), size: 256 }) }),
+    //     new VideoElement({ width: 1920, height: 1080, source: new VideoSource({ width: 1920, height: 1080, duration: 60, cover: '', src: '', name: 'video3.mp4', file: new Blob(), size: 256 }) }),
+    //     new VideoElement({ width: 1920, height: 1080, source: new VideoSource({ width: 1920, height: 1080, duration: 60, cover: '', src: '', name: 'video4.mp4', file: new Blob(), size: 256 }) }),
+    //     new VideoElement({ width: 1920, height: 1080, source: new VideoSource({ width: 1920, height: 1080, duration: 60, cover: '', src: '', name: 'video5.mp4', file: new Blob(), size: 256 }) }),
+    //     new VideoElement({ width: 1920, height: 1080, source: new VideoSource({ width: 1920, height: 1080, duration: 60, cover: '', src: '', name: 'video6.mp4', file: new Blob(), size: 256 }) }),
+    //     new VideoElement({ width: 1920, height: 1080, source: new VideoSource({ width: 1920, height: 1080, duration: 60, cover: '', src: '', name: 'video7.mp4', file: new Blob(), size: 256 }) }),
+    //     new VideoElement({ width: 1920, height: 1080, source: new VideoSource({ width: 1920, height: 1080, duration: 60, cover: '', src: '', name: 'video8.mp4', file: new Blob(), size: 256 }) })
+    // ],
+    // images: [
+    //     new ImageElement({ width: 200, height: 200, source: new ImageSource({ width: 1920, height: 1080, src: '', image: new Image(), name: 'img1.jpg', file: new Blob(), size: 256 }) }),
+    //     new ImageElement({ width: 200, height: 200, source: new ImageSource({ width: 1920, height: 1080, src: '', image: new Image(), name: 'img2.jpg', file: new Blob(), size: 256 }) })
+    // ]，
+    images: [],
+    videos: []
 }
 const useClipStore = defineStore('clip', () => {
     // 轨道上的元素渲染
@@ -27,14 +30,19 @@ const useClipStore = defineStore('clip', () => {
         videos: [...mockerData.videos],
         images: [...mockerData.images]
     })
+    // 剪切的片段
+    const clipCuts = ref<ClipCut[]>([])
+    // 播放状态
     const playState = ref(false)
+    // 播放的当前时间
     const currentTime = ref(0)
+    // 最长时间，是个计算属性
     const duration = computed(() => {
         let duration = 0;
         Object.values(elements.value).forEach(v => {
             v.forEach(item => {
-                if (item.duration > duration) {
-                    duration = item.duration
+                if (item.duration + item.startTime > duration) {
+                    duration = item.duration + item.startTime
                 }
             })
         })
@@ -64,12 +72,33 @@ const useClipStore = defineStore('clip', () => {
         // 3. 合成视频 --------------------------------------
         muxVideo(elements.value, writableStream)
     }
+    const updateElemntStartTime = (id: number, startTime: number) => {
+        const els = Object.values(elements.value).flat()
+        for (const el of els) {
+            if (el.id === id) {
+                el.startTime = startTime
+                return
+            }
+        }
+    }
+    const updateElementDuration = (id: number, duration: number) => {
+        const els = Object.values(elements.value).flat()
+        for (const el of els) {
+            if (el.id === id) {
+                el.duration = duration
+                return
+            }
+        }
+    }
     return {
         elements,
         exportVideo,
         playState,
         currentTime,
-        duration
+        duration,
+        clipCuts,
+        updateElemntStartTime,
+        updateElementDuration,
     }
 })
 

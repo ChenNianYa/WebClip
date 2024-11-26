@@ -15,6 +15,7 @@ html,body,#app{
     --right-config-width: 350;
     /* 主颜色 */
     --primary-1:rgb(31,31,31);
+    --clip-cut-area-color:rgba(255,255,255,0.4);
     /* 边框颜色 */
     --primary-border:rgb(49,50,50);
     /* 轨道高度 */
