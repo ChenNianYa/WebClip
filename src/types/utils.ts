@@ -27,7 +27,7 @@ export interface CvsRatio {
  * CanvasManager 配置选项
  */
 
-export interface CanvasManagerOption {
+export interface PreviewCanvasManagerOption {
     width: number;
     height: number;
     canvas: HTMLCanvasElement;

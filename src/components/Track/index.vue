@@ -33,7 +33,7 @@ const list = computed<TrackItem[]>(() => {
     for (const image of clipStore.elements.images) {
         list.push({
             id: image.id,
-            duration: image.duration,
+            duration: clipStore.duration,
             startTime: image.startTime,
             name: image.source.name,
             stretchable: true

@@ -12,11 +12,12 @@ export type VideoSourceOption = {
     src: string
     width: number
     height: number
+    video: HTMLVideoElement
 } & BaseSource
 
 export type ImageSourceOption = {
     src: string
     width: number
     height: number
-    image: InstanceType<typeof Image>
+    image: HTMLImageElement
 } & BaseSource

@@ -27,9 +27,10 @@ const getImageSource = async (imageBlob: File) => {
         src,
         width: image.width,
         height: image.height,
-        image: image
+        image
     })
     imageList.value.push(imageSource)
+    // image.remove()
 }
 const onDelete = (id: number) => {
     imageList.value = imageList.value.filter(v => v.id !== id)

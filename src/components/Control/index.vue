@@ -31,8 +31,6 @@ const { currentTime, playState } = storeToRefs(clipStore)
 const noElement = computed(() => {
     let elmentsNumber = 0
     Object.values(clipStore.elements).forEach(v => {
-        console.log(v);
-
         elmentsNumber += v.length
     })
     return !elmentsNumber

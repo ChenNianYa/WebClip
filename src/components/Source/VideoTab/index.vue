@@ -16,7 +16,8 @@ const getVideoSource = async (videoBlob: File) => {
             resolve(e);
         };
     });
-    video.src = URL.createObjectURL(videoBlob);
+    const videoSrc = URL.createObjectURL(videoBlob)
+    video.src = videoSrc;
     await loadVideoPromise;
     const canvas = document.createElement('canvas');
     canvas.height = video.videoHeight;
@@ -37,14 +38,14 @@ const getVideoSource = async (videoBlob: File) => {
         file: videoBlob,
         size: videoBlob.size,
         duration: video.duration,
-        src: URL.createObjectURL(videoBlob),
+        src: videoSrc,
         width: video.videoWidth,
         height: video.videoHeight,
         cover,
+        video: video
     })
     videoList.value.push(videoSource)
     canvas.remove()
-    video.remove()
 }
 const onDelete = (id: number) => {
     videoList.value = videoList.value.filter(v => v.id !== id)

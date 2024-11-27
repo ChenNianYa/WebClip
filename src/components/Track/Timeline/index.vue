@@ -52,7 +52,6 @@ const trackCurrentTime = ref({ x: 0, time: '' })
 const showTrackCurrentTime = ref(false)
 const trackMouseMove = (e: MouseEvent) => {
     e.preventDefault()
-    console.log(e, trackRefRect);
     if (!trackRefRect.value) return
     let x = e.clientX - trackRefRect.value.left + (trackRef.value?.scrollLeft ?? 0)
     const time = x / props.perSecondPx

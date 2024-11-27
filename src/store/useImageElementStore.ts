@@ -6,7 +6,9 @@ const useImageElementStore = defineStore('imageElement', () => {
     const clipStore = useClipStore()
     // 增加videoElemnt
     const addImageElement = (ImageElement: ImageElement) => {
+        clipStore.playState = false
         clipStore.elements.images.push(ImageElement)
+        clipStore.updatePreviewCanvas()
     }
     return {
         addImageElement

@@ -8,6 +8,7 @@ class VideoSource extends BaseSource {
     src!: string
     width!: number
     height!: number
+    video!: HTMLVideoElement
     constructor(option: VideoSourceOption) {
         super(option)
         this.duration = option.duration
@@ -16,6 +17,7 @@ class VideoSource extends BaseSource {
         this.id = BaseSource._id
         this.width = option.width
         this.height = option.height
+        this.video = option.video
         BaseSource._id++
     }
 }
