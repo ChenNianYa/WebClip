@@ -19,8 +19,6 @@ const muxVideo = async (elemntsMap: ElementsMap, writableStream: FileSystemWrita
  * 以 视频为单位剪辑
  */
 const muxClip = async (video: VideoElement, images: ImageElement[], writableStream: FileSystemWritableFileStream) => {
-    const showCanvas: HTMLCanvasElement = document.querySelector('#cvs') as HTMLCanvasElement
-    const showctx = showCanvas.getContext('2d')
     const nbSampleMax = 10
     const oneSecondInMicrosecond = 100000
     const videoH = 1080
@@ -69,6 +67,8 @@ const muxClip = async (video: VideoElement, images: ImageElement[], writableStre
     const encoderFile = MP4Box.createFile()
     const videoEncoder = new VideoEncoder({
         output: async (encodedChunk, config) => {
+            console.log('encoderChunk');
+
             if (!encodingVideoTrack) {
                 encodingVideoTrack = encoderFile.addTrack({
                     timescale: oneSecondInMicrosecond,
@@ -123,6 +123,8 @@ const muxClip = async (video: VideoElement, images: ImageElement[], writableStre
     let decoderFile = MP4Box.createFile()
     const videoDecoder = new VideoDecoder({
         output: async (videoFrame) => {
+            console.log(111);
+
             ctx.clearRect(0, 0, videoW, videoH)
             ctx.drawImage(videoFrame, 0, 0, videoW, videoH)
             videoFrame.close()
@@ -131,7 +133,6 @@ const muxClip = async (video: VideoElement, images: ImageElement[], writableStre
             }
             // 采用 transferToImageBitmap 不用blob时因为blob太慢了
             const ibm = canvas.transferToImageBitmap()
-            showctx?.drawImage(ibm, 0, 0, videoW, videoH)
             const timestamp = videoFrameDurationInMicrosecond * decodedVideoFrameCount;
             // webworker + indexdb 存储大数据
             indexDbWorker.postMessage({ index: decodedVideoFrameCount, value: ibm, timestamp, type: indexDbStorageFrame })
@@ -143,6 +144,8 @@ const muxClip = async (video: VideoElement, images: ImageElement[], writableStre
     })
 
     decoderFile.onReady = (info: any) => {
+        console.log(info);
+
         decoderFile.stream.cleanBuffers()
         const videoTrack = info.videoTracks[0];
         nbSampleTotal = videoTrack.nb_samples;
@@ -190,7 +193,7 @@ const muxClip = async (video: VideoElement, images: ImageElement[], writableStre
     decoderFile.onSamples = async (trackId: number, ref: any, samples: any[]) => {
         decoderFile.stop();
         decoderFile.releaseUsedSamples(trackId, countSample)
-        //console.log("onSample ",countSample+" VS "+nbSampleTotal)
+        console.log("onSample ", countSample + " VS " + nbSampleTotal)
         countSample += samples.length;
         for (const sample of samples) {
             // is it a keyframe

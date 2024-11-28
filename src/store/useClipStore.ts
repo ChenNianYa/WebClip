@@ -9,7 +9,8 @@ import { updateCanvasElementKey } from "@/event-bus";
 import { Ratio } from "@/types/clip-config-types";
 import { ElementsMap } from "@/types/element-option-types";
 import { ClipCut } from "@/types/utils";
-import muxVideo from "@/utils/muxVideo";
+// import muxVideo from "@/utils/muxVideo";
+import { muxVideo } from "@/utils/mux-video";
 import { useDebounceFn, useEventBus } from "@vueuse/core";
 import { defineStore } from "pinia";
 const updateCanvasElementBus = useEventBus(updateCanvasElementKey)
@@ -62,6 +63,8 @@ const useClipStore = defineStore('clip', () => {
     })
     // 视频比例
     const ratio = ref<Ratio>(Ratio.Horizontal)
+    const width = computed(() => ratio.value === Ratio.Horizontal ? 1920 : 100)
+    const height = computed(() => ratio.value === Ratio.Horizontal ? 1080 : 100)
     // preview canvas manager
     updateCanvasElementBus.on((e) => {
         const els = Object.values(elements.value).flat()
@@ -92,16 +95,6 @@ const useClipStore = defineStore('clip', () => {
             ctx.clearRect(0, 0, canvas.width, canvas.height)
             video.source.video.width = video.width
             video.source.video.height = video.height
-            // video.source.video.addEventListener('canplay', () => {
-            //     console.log(111);
-
-            //     // resolve(true)
-            // })
-            // video.source.video.addEventListener('timeupdate', () => {
-            //     console.log(222);
-
-            //     // resolve(true)
-            // })
             if (currentTime.value !== video.source.video.currentTime || (video.source.video.readyState <= HTMLMediaElement.HAVE_CURRENT_DATA)) {
                 const canPlayPromise = new Promise((resolve) => {
                     video.source.video.addEventListener('canplay', () => {
@@ -138,28 +131,7 @@ const useClipStore = defineStore('clip', () => {
         }
     }
     const exportVideo = async () => {
-        // // 1. 选择要到导出的文件夹 --------------------
-        // let folderHandle
-        // try {
-        //     //@ts-ignore
-        //     folderHandle = await window.showDirectoryPicker();
-        // } catch (error) {
-        //     // @ts-ignore
-        //     if (error.name === "AbortError") {
-        //         console.log("用户取消了文件夹选择。");
-        //     } else {
-        //         console.error("出现错误：", error);
-        //     }
-        // }
-        // if (!folderHandle) return
-        // const handle: FileSystemDirectoryHandle = folderHandle
-        // // 2. 创建文件 ------------------------------------
-        // const fileName = 'test.mp4'
-        // const fileHandle = await handle.getFileHandle(fileName, { create: true });
-        // // // 可以通过writableStream去写入文件了
-        // const writableStream = await fileHandle.createWritable();
-        // // 3. 合成视频 --------------------------------------
-        // muxVideo(elements.value, writableStream)
+        muxVideo()
     }
     // 通过id来更新元素
     const updateElemntStartTime = (id: number, startTime: number) => {
@@ -190,7 +162,9 @@ const useClipStore = defineStore('clip', () => {
         updateElemntStartTime,
         updateElementDuration,
         ratio,
-        updatePreviewCanvas
+        updatePreviewCanvas,
+        width,
+        height
     }
 })
 
