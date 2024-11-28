@@ -40,6 +40,7 @@ export const muxVideo = async () => {
                 cts: encodedChunk.timestamp,
                 is_sync: encodedChunk.type == "key"
             })
+            encoderFile.releaseUsedSamples(encodingVideoTrack, encoderCount)
             if (videoEncoder.encodeQueueSize === 0) {
                 if (!decoderOver) {
                     console.log('continue');
@@ -47,9 +48,16 @@ export const muxVideo = async () => {
                 } else {
                     if (encoderCount === decoderVideoSampleCount) {
                         console.log('over');
-                        // @ts-ignore
-                        const buffer = await encoderFile.getBuffer();
-                        await writableStream.write(new Blob([buffer]))
+                        console.log(encoderFile);
+                        for (let i = 0; i < encoderFile.boxes.length; i++) {
+                            console.log(i);
+                            if (encoderFile.boxes[i] === null) continue;
+                            const ds = new mp4box.DataStream()
+                            ds.endianness = mp4box.DataStream.BIG_ENDIAN;
+                            encoderFile.boxes[i].write(ds);
+                            await writableStream.write(ds.buffer)
+                            delete encoderFile.boxes[i];
+                        }
                         await writableStream.close()
                     }
 
@@ -86,6 +94,9 @@ export const muxVideo = async () => {
             videoFrame.close()
             if (decoderFileSampleCount === samplesCount && videoDecoder.decodeQueueSize === 0) {
                 decoderOver = true
+                // @ts-ignore
+                decoderFile.stream.cleanBuffers()
+
             }
         },
         error: () => {
