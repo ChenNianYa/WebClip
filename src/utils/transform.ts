@@ -20,3 +20,9 @@ export const formatBytesToUnit = (bytes: number): string => {
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return `${(bytes / Math.pow(k, i)).toFixed(2)} ${sizes[i]}`;
 }
+
+// 
+
+export const twoDecimalNumberize = (num: number) => {
+    return Math.round(num * 100) / 100
+}

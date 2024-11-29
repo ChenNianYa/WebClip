@@ -18,12 +18,12 @@
       </div>
       <!-- 控制区域 -->
       <div class="flex">
-        <div class="flex-1">
+        <div class="flex-1 flex flex-col">
           <div class="border-t border-primary-border h-control px-4">
             <Control />
           </div>
           <!-- 轨道区域 -->
-          <div class="border-t border-primary-border h-track p-4">
+          <div class="border-t border-primary-border h-track shrink-0 relative">
             <Track />
           </div>
         </div>

@@ -249,8 +249,7 @@ const containerHandler = (cvsManager: PreviewCanvasManager) => {
             cvsManager.activeElement = el
             cvsManager.resetCtrlElPos()
         } else {
-            cvsManager.activeElement = null
-            cvsManager.ctrl.style.cssText = ''
+            cvsManager.cancelActiveElement()
         }
     }
     const mouseUp = () => {

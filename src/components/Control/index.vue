@@ -6,12 +6,12 @@
         <!-- 有素材的时候 -->
         <div v-else class="flex items-center justify-between w-full">
             <div class="flex items-center flex-1 mr-10">
-                <el-icon :size="50" class="mr-4" @click="() => { playState = !playState }">
+                <el-icon :size="50" class="mr-4" @click="togglePlay">
                     <VideoPlay v-show="!clipStore.playState" />
                     <VideoPause v-show="clipStore.playState" />
                 </el-icon>
                 <el-slider v-model="currentTime" :max="clipStore.duration" :min="0"
-                    :format-tooltip="secondsToTimeFormat" />
+                    :format-tooltip="secondsToTimeFormat" :step="0.1" @change="onChange" />
             </div>
             <div>
                 <el-button @click="clipStore.exportVideo">导出视频</el-button>
@@ -35,4 +35,15 @@ const noElement = computed(() => {
     })
     return !elmentsNumber
 })
+
+const togglePlay = () => {
+    playState.value = !playState.value;
+    if (playState.value) {
+        clipStore.preview()
+    }
+}
+
+const onChange = () => {
+    clipStore.updatePreviewCanvas(clipStore.currentTime)
+}
 </script>

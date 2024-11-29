@@ -5,7 +5,7 @@ import containerHandler from "./containerHandler";
 // canvas 管理器
 class PreviewCanvasManager {
     elements: CanvasElement[] = [] // 元素
-    activeElement: CanvasElement | null = null // 激活的元素
+    activeElement: CanvasElement | undefined = undefined // 激活的元素
     offScreenCvs!: OffscreenCanvas // canvasdom
     container!: HTMLDivElement
     containerRect!: DOMRect
@@ -50,6 +50,12 @@ class PreviewCanvasManager {
             ctx.restore();
         }
     }
+    reset() {
+        this.elements = []
+        const ctx = this.offScreenCvs.getContext('2d')
+        if (!ctx) return
+        ctx.clearRect(0, 0, this.offScreenCvs.width, this.offScreenCvs.height)
+    }
     isPointInRect = (point: [number, number], rect: [[number, number], [number, number], [number, number], [number, number]]): boolean => {
         const [touchX, touchY] = point;
         // 长方形四个点的坐标
@@ -68,6 +74,10 @@ class PreviewCanvasManager {
             return true;
         }
         return false;
+    }
+    cancelActiveElement() {
+        this.activeElement = undefined
+        this.ctrl.style.cssText = ''
     }
     resetCtrlElPos() {
         if (!this.activeElement) return

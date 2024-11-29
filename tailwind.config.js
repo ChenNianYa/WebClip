@@ -14,15 +14,15 @@ export default {
         'primary-border':'var(--primary-border)'
       },
       width:{
-        'left':'calc(var(--left-element-width)*1px)',
-        'right':'calc(var(--right-config-width)*1px)'
+        'left':'var(--left-element-width)',
+        'right':'var(--right-config-width)'
       },
       height:{
         'control':'var(--control-height)',
         'track':'var(--track-height)',
       },
-      textColor:{
-        
+      flexBasis:{
+        'right':'var(--right-config-width)'
       }
     },
   },

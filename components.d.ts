@@ -12,6 +12,8 @@ declare module 'vue' {
     Control: typeof import('./src/components/Control/index.vue')['default']
     ElButton: typeof import('element-plus/es')['ElButton']
     ElCard: typeof import('element-plus/es')['ElCard']
+    ElDescriptions: typeof import('element-plus/es')['ElDescriptions']
+    ElDescriptionsItem: typeof import('element-plus/es')['ElDescriptionsItem']
     Element: typeof import('./src/components/Element/index.vue')['default']
     ElIcon: typeof import('element-plus/es')['ElIcon']
     ElImage: typeof import('element-plus/es')['ElImage']

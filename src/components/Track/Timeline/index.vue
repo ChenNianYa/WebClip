@@ -1,23 +1,22 @@
 <template>
-    <div style="width: calc(100vw - 700px);overflow: scroll" class="relative h-[260px]" ref="trackRef"
-        @mouseenter="() => { showTrackCurrentTime = true }" @mouseleave="() => { showTrackCurrentTime = false }">
-        <div class="relative">
+    <div ref="trackRef" @mouseenter="() => { showTrackCurrentTime = true }"
+        @mouseleave="() => { showTrackCurrentTime = false }">
+        <div class="relative overflow-scroll h-full">
             <!-- 头部 -->
-            <TimeLineHeader :duration="props.duration" :per-second-px="props.perSecondPx" :track-ref="trackRef"
-                @add-per-second-px="emits('add-per-second-px')"
-                @decrease-per-second-px="emits('decrease-per-second-px')" class="sticky top-0 z-20 bg-primary-1" />
+            <div class="relative">
+                <TimeLineHeader :duration="props.duration" :per-second-px="props.perSecondPx" :track-ref="trackRef"
+                    @add-per-second-px="emits('add-per-second-px')"
+                    @decrease-per-second-px="emits('decrease-per-second-px')" class="sticky top-0 z-20 bg-primary-1" />
 
-            <div class="mt-2 relative">
-                <div class="relative">
-                    <TrackRows :data-list="props.dataList" :per-second-px="props.perSecondPx" :duration="props.duration"
-                        @update-track-row-start-time="(id, time) => { emits('update-track-row-start-time', id, time); }"
-                        @update-duration="(id, duration) => { emits('update-duration', id, duration) }" />
-                    <ClipCutAreas :per-second-px="props.perSecondPx" />
-                    <!-- 鼠标悬浮的游标 -->
-                    <div class="absolute top-0 h-full border-l border-white border-dashed pointer-events-none z-10"
-                        v-show="showTrackCurrentTime" :style="{ left: trackCurrentTime.x + 'px' }">
-                        <el-tag type="info" class="sticky">{{ trackCurrentTime.time }}</el-tag>
-                    </div>
+                <TrackRows :data-list="props.dataList" :per-second-px="props.perSecondPx" :duration="props.duration"
+                    @update-track-row-start-time="(id, time) => { emits('update-track-row-start-time', id, time); }"
+                    @update-duration="(id, duration) => { emits('update-duration', id, duration) }" />
+                <ClipCutAreas :per-second-px="props.perSecondPx" />
+                <!-- 鼠标悬浮的游标 -->
+                <div class="absolute top-0 h-full border-l border-white border-dashed pointer-events-none z-30"
+                    v-show="showTrackCurrentTime" :style="{ left: trackCurrentTime.x + 'px' }">
+                    <el-tag type="info" class="fixed" :style="{ top: y + 'px', left: x + 'px' }">{{
+                        trackCurrentTime.time }}</el-tag>
                 </div>
             </div>
         </div>
@@ -27,12 +26,14 @@
 <script setup lang="ts">
 import { TrackItem } from '@/types/timeline-types';
 import { secondsToTimeFormat } from '@/utils/transform';
+import { useMouse } from '@vueuse/core';
 const emits = defineEmits<{
     (e: 'update-duration', id: number, duration: number): void,
     (e: 'add-per-second-px'): void,
     (e: 'decrease-per-second-px'): void
     (e: 'update-track-row-start-time', id: number, time: number): void
 }>()
+const { x, y } = useMouse()
 const trackRef = ref<HTMLDivElement>()
 const props = withDefaults(defineProps<{
     dataList: TrackItem[],

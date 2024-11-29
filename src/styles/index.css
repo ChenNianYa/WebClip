@@ -11,8 +11,8 @@ html,body,#app{
 }
 
 :root{
-    --left-element-width: 350;
-    --right-config-width: 350;
+    --left-element-width: 350px;
+    --right-config-width: 350px;
     /* 主颜色 */
     --primary-1:rgb(31,31,31);
     --clip-cut-area-color:rgba(255,255,255,0.4);

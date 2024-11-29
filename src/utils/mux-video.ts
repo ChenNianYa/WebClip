@@ -48,9 +48,7 @@ export const muxVideo = async () => {
                 } else {
                     if (encoderCount === decoderVideoSampleCount) {
                         console.log('over');
-                        console.log(encoderFile);
                         for (let i = 0; i < encoderFile.boxes.length; i++) {
-                            console.log(i);
                             if (encoderFile.boxes[i] === null) continue;
                             const ds = new mp4box.DataStream()
                             ds.endianness = mp4box.DataStream.BIG_ENDIAN;
@@ -92,6 +90,8 @@ export const muxVideo = async () => {
             frame.close()
             decoderVideoSampleCount++;
             videoFrame.close()
+            console.log(decoderFile);
+
             if (decoderFileSampleCount === samplesCount && videoDecoder.decodeQueueSize === 0) {
                 decoderOver = true
                 // @ts-ignore
