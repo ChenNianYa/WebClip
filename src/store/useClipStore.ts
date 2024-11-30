@@ -11,7 +11,7 @@ import { Ratio } from "@/types/clip-config-types";
 import { ElementsMap } from "@/types/element-option-types";
 import { ClipCut } from "@/types/utils";
 // import muxVideo from "@/utils/muxVideo";
-import { muxVideo } from "@/utils/mux-video";
+import { muxVideo } from "@/utils/mux-video-webm";
 import { elementInPreview } from "@/utils/preview-utils";
 import { useDebounceFn, useEventBus } from "@vueuse/core";
 import { defineStore } from "pinia";

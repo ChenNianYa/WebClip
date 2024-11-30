@@ -1,7 +1,45 @@
 import VideoElement from '@/classes/element/VideoElement';
 import useClipStore from '@/store/useClipStore';
-import mp4box, { MP4ArrayBuffer, MP4File, MP4VideoTrack, SampleOpts, VideoTrackOpts } from '@webav/mp4box.js';
+import mp4box, { MP4ArrayBuffer, MP4File } from '@webav/mp4box.js';
 const DataStream = mp4box.DataStream
+function generateAVCCDescription() {
+    // AVCC configuration version (always 1)
+    const version = 1;
+
+    // AVCC profile indication (e.g., Baseline, Main, High profile)
+    const profileIndication = 77;
+
+    // AVCC profile compatibility
+    const profileCompatibility = 64;
+
+    // AVCC level indication (e.g., 3.0 for 720p)
+    const levelIndication = 41;
+
+    // AVCC length size minus one (indicates the number of bytes for the length field in the NAL unit header)
+    const lengthSizeMinusOne = 3;
+
+    // Construct the AVCC description byte sequence
+    const avccDescription = new Uint8Array(39);
+    let offset = 0;
+
+    // Version
+    avccDescription[offset++] = version;
+    // Profile indication
+    avccDescription[offset++] = profileIndication;
+    // Profile compatibility
+    avccDescription[offset++] = profileCompatibility;
+    // Level indication
+    avccDescription[offset++] = levelIndication;
+    // Length size minus one
+    avccDescription[offset++] = lengthSizeMinusOne;
+
+    // Placeholder for additional bytes as per ISO/IEC 14496-15 standard
+    for (let i = offset; i < avccDescription.length; i++) {
+        avccDescription[i] = 0; // Initialize remaining bytes to 0
+    }
+
+    return avccDescription;
+}
 export const muxVideo = async () => {
     const clipStore = useClipStore()
     const writableStream = await getWritableFileStream()
@@ -10,10 +48,13 @@ export const muxVideo = async () => {
     const ctx = muxOffscreenCanvas.getContext('2d')
 
     if (!ctx) return
-    // 最后合成的视频轨道
+    // 一次最多解析多少帧  太多会爆内存 太少又会慢
     const decodeMaxSampleOnce = 100
+    // 合成视频的轨道
     let encodingVideoTrack = 0
+    // 判断是否decoder完成
     let decoderOver = false
+    // encoder 将帧编进track的数量
     let encoderCount = 0
     const oneSecondInMicrosecond = 100000
     let videoFrameDurationInMicrosecond: number
@@ -24,12 +65,14 @@ export const muxVideo = async () => {
         output: async (encodedChunk, config) => {
             encoderCount++;
             if (!encodingVideoTrack) {
+                console.log(config?.decoderConfig?.description, 'config?.decoderConfig?.description');
                 // @ts-ignore
                 encodingVideoTrack = encoderFile.addTrack({
                     timescale: oneSecondInMicrosecond,
+                    duration: clipStore.duration,
                     width: clipStore.width,
                     height: clipStore.height,
-                    avcDecoderConfigRecord: config?.decoderConfig?.description
+                    avcDecoderConfigRecord: config?.decoderConfig?.description,
                 });
             }
             const buffer = new ArrayBuffer(encodedChunk.byteLength);
@@ -43,11 +86,9 @@ export const muxVideo = async () => {
             encoderFile.releaseUsedSamples(encodingVideoTrack, encoderCount)
             if (videoEncoder.encodeQueueSize === 0) {
                 if (!decoderOver) {
-                    console.log('continue');
                     decoderFile.start()
                 } else {
                     if (encoderCount === decoderVideoSampleCount) {
-                        console.log('over');
                         for (let i = 0; i < encoderFile.boxes.length; i++) {
                             if (encoderFile.boxes[i] === null) continue;
                             const ds = new mp4box.DataStream()
@@ -72,7 +113,6 @@ export const muxVideo = async () => {
     const videoDecoder = new VideoDecoder({
         output: async (videoFrame) => {
             const video = clipStore.elements.videos[0]
-
             ctx.clearRect(0, 0, clipStore.width, clipStore.height)
             ctx.drawImage(videoFrame, video.x, video.y, video.width, video.height)
             // 可以拿 start和duration来判断是否要加入图片
@@ -90,7 +130,7 @@ export const muxVideo = async () => {
             frame.close()
             decoderVideoSampleCount++;
             videoFrame.close()
-            console.log(decoderFile);
+            // console.log(decoderFile);
 
             if (decoderFileSampleCount === samplesCount && videoDecoder.decodeQueueSize === 0) {
                 decoderOver = true
@@ -146,14 +186,14 @@ export const muxVideo = async () => {
             hardwareAcceleration: "prefer-hardware",
             avc: { format: "avc" }
         })
-        console.log({
-            // 编码格式
-            codec: "avc1.4D0032",
-            width: clipStore.width,
-            height: clipStore.height,
-            hardwareAcceleration: "prefer-hardware",
-            avc: { format: "avc" }
-        });
+        // console.log({
+        //     // 编码格式
+        //     codec: "avc1.4D0032",
+        //     width: clipStore.width,
+        //     height: clipStore.height,
+        //     hardwareAcceleration: "prefer-hardware",
+        //     avc: { format: "avc" }
+        // });
 
         videoDecoder.configure({
             codec: videoTrack.codec.startsWith("vp08") ? "vp8" : videoTrack.codec,
