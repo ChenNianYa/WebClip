@@ -32,9 +32,6 @@ importers:
       webm-muxer:
         specifier: ^5.0.2
         version: 5.0.2
-      webm-writer:
-        specifier: ^1.0.0
-        version: 1.0.0
     devDependencies:
       '@types/node':
         specifier: ^22.9.1
@@ -1150,9 +1147,6 @@ packages:
   webm-muxer@5.0.2:
     resolution: {integrity: sha512-/1m0ZGOcx8TvEmqY+U7GromXTKtto4pi5ou+ZvaQXEjb+G/v1cln2ZbKK3T4fpWhLBYjKBeYWza/y1Nxccm5pg==}
 
-  webm-writer@1.0.0:
-    resolution: {integrity: sha512-xafP4mzUqht03HBXP0Ov2YGsxfD08uncad9fQeshYwQXrcP6Z/4uxd1IUaGKqKigFPAgaD9xb6JEKA8SXLQMLA==}
-
   webpack-virtual-modules@0.6.2:
     resolution: {integrity: sha512-66/V2i5hQanC51vBQKPH4aI8NMAcBW59FVBs+rC7eGHupMyfn34q7rZIE+ETlJ+XTevqfUhVVBgSUNSW2flEUQ==}
 
@@ -2182,8 +2176,6 @@ snapshots:
     dependencies:
       '@types/dom-webcodecs': 0.1.13
       '@types/wicg-file-system-access': 2020.9.8
-
-  webm-writer@1.0.0: {}
 
   webpack-virtual-modules@0.6.2: {}
 

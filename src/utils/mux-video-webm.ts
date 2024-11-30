@@ -2,8 +2,6 @@ import VideoElement from '@/classes/element/VideoElement';
 import useClipStore from '@/store/useClipStore';
 import mp4box, { MP4ArrayBuffer, MP4File, MP4Info } from '@webav/mp4box.js';
 import { elementInPreview } from './preview-utils';
-// @ts-ignore
-const WebMWriter = (await import('webm-writer')).default
 import { Muxer, FileSystemWritableFileStreamTarget } from 'webm-muxer';
 const framerate = 25
 const oneSecondInMicrosecond = 1000000
@@ -151,7 +149,7 @@ export const muxVideo = async () => {
         // 记1秒为一次关键帧
         const ibmp = muxOffscreenCanvas.transferToImageBitmap()
         const frame = new VideoFrame(ibmp, { timestamp: cts * count })
-        videoEncoder.encode(frame, { keyFrame: count % framerate === 0 })
+        videoEncoder.encode(frame, { keyFrame: count % (framerate * 10) === 0 })
         ibmp.close()
         frame.close()
     }

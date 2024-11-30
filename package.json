@@ -16,8 +16,7 @@
     "mp4box": "^0.5.3",
     "pinia": "^2.2.6",
     "vue": "^3.5.12",
-    "webm-muxer": "^5.0.2",
-    "webm-writer": "^1.0.0"
+    "webm-muxer": "^5.0.2"
   },
   "devDependencies": {
     "@types/node": "^22.9.1",
