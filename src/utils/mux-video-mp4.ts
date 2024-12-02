@@ -2,7 +2,7 @@ import VideoElement from '@/classes/element/VideoElement';
 import useClipStore from '@/store/useClipStore';
 import mp4box, { MP4ArrayBuffer, MP4File, MP4Info } from '@webav/mp4box.js';
 import { elementInPreview } from './preview-utils';
-import { Muxer, FileSystemWritableFileStreamTarget } from 'webm-muxer';
+import { Muxer, FileSystemWritableFileStreamTarget } from 'mp4-muxer';
 const framerate = 25
 const oneSecondInMicrosecond = 1000000
 const cts = oneSecondInMicrosecond / framerate
@@ -19,16 +19,17 @@ export const muxVideo = async () => {
     const muxer = new Muxer({
         target: fileSystemWritableFileStreamTarget,
         video: {
-            codec: 'V_VP9',
+            codec: 'avc',
             width: clipStore.width,
             height: clipStore.height,
             frameRate: framerate
-        }
+        },
+        fastStart: false
     })
     let muxNumber = 0;
     const videoEncoder = new VideoEncoder({
-        output: async (chunk) => {
-            muxer.addVideoChunk(chunk)
+        output: async (chunk, meta) => {
+            muxer.addVideoChunk(chunk, meta)
             muxNumber++;
             if (muxNumber === framesCount) {
                 muxer.finalize();
@@ -40,10 +41,10 @@ export const muxVideo = async () => {
         error: e => console.error(e)
     });
     videoEncoder.configure({
-        codec: 'vp09.00.10.08',
-        width: clipStore.width,
-        height: clipStore.height,
-        bitrate: 1e6
+        codec: 'avc1.4D0032',
+        width: 1280,
+        height: 720,
+        hardwareAcceleration: 'prefer-software'
     });
 
     // key 是id
@@ -84,6 +85,8 @@ export const muxVideo = async () => {
             decoderFiles[video.id] = { ...res, decoderNum: 0 }
         }
     }
+    console.log(decoderFiles);
+
     // 编排samples
     const samplesResult: { vid: number, index: number }[][] = []
     for (let i = 0; i < framesCount; i++) {
@@ -125,6 +128,7 @@ export const muxVideo = async () => {
                 data: sample.data
             });
             decoder.decode(chunk)
+            file.releaseUsedSamples(tid, i)
         }
 
 
@@ -141,6 +145,7 @@ export const muxVideo = async () => {
                 decoderIndex++
                 decoderSamples(decoderIndex)
             }
+            // clearTimeout(timer)
         }, 16);
 
     }
@@ -172,7 +177,7 @@ const getWritableFileStream = async () => {
     }
     if (!folderHandle) return
     const handle: FileSystemDirectoryHandle = folderHandle
-    const fileName = 'testwebm.webm'
+    const fileName = 'testwebm.mp4'
     const fileHandle = await handle.getFileHandle(fileName, { create: true });
     const writableStream = await fileHandle.createWritable();
     return writableStream
@@ -192,8 +197,6 @@ const getDecoderFile = async (video: VideoElement, output: (frame: VideoFrame, i
             // console.log(decoderFile);
             const videoTrack = info.videoTracks[0];
             const _track = decoderFile.getTrackById(videoTrack.id);
-            console.log(_track);
-
             let description
             for (const entry of _track.mdia.minf.stbl.stsd.entries) {
                 // @ts-ignore

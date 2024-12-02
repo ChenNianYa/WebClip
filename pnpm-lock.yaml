@@ -20,6 +20,9 @@ importers:
       element-plus:
         specifier: ^2.8.8
         version: 2.8.8(vue@3.5.13(typescript@5.6.3))
+      mp4-muxer:
+        specifier: ^5.1.5
+        version: 5.1.5
       mp4box:
         specifier: ^0.5.3
         version: 0.5.3
@@ -29,9 +32,6 @@ importers:
       vue:
         specifier: ^3.5.12
         version: 3.5.13(typescript@5.6.3)
-      webm-muxer:
-        specifier: ^5.0.2
-        version: 5.0.2
     devDependencies:
       '@types/node':
         specifier: ^22.9.1
@@ -802,6 +802,9 @@ packages:
   mlly@1.7.3:
     resolution: {integrity: sha512-xUsx5n/mN0uQf4V548PKQ+YShA4/IW0KI1dZhrNrPCLG+xizETbHTkOa1f8/xut9JRPp8kQuMnz0oqwkTiLo/A==}
 
+  mp4-muxer@5.1.5:
+    resolution: {integrity: sha512-dRk4STKmR7sIx12kMBa21DaIxdMG0w4tYwOqi8+Z4NW03I1QloRBWSxU4kReztDGdz5gWp4jSwIKWOIaP9Ia+g==}
+
   mp4box@0.5.3:
     resolution: {integrity: sha512-RIvyFZdPDIg3+mL6vUdPBSyQRrEfKO3ryAeJ4xJJV7HBHQUH3KfLlZRzfSpBHCd/HqR63HfbrWQI/CwXDvYENQ==}
 
@@ -1143,9 +1146,6 @@ packages:
     peerDependenciesMeta:
       typescript:
         optional: true
-
-  webm-muxer@5.0.2:
-    resolution: {integrity: sha512-/1m0ZGOcx8TvEmqY+U7GromXTKtto4pi5ou+ZvaQXEjb+G/v1cln2ZbKK3T4fpWhLBYjKBeYWza/y1Nxccm5pg==}
 
   webpack-virtual-modules@0.6.2:
     resolution: {integrity: sha512-66/V2i5hQanC51vBQKPH4aI8NMAcBW59FVBs+rC7eGHupMyfn34q7rZIE+ETlJ+XTevqfUhVVBgSUNSW2flEUQ==}
@@ -1830,6 +1830,11 @@ snapshots:
       pkg-types: 1.2.1
       ufo: 1.5.4
 
+  mp4-muxer@5.1.5:
+    dependencies:
+      '@types/dom-webcodecs': 0.1.13
+      '@types/wicg-file-system-access': 2020.9.8
+
   mp4box@0.5.3: {}
 
   ms@2.1.3: {}
@@ -2171,11 +2176,6 @@ snapshots:
       '@vue/shared': 3.5.13
     optionalDependencies:
       typescript: 5.6.3
-
-  webm-muxer@5.0.2:
-    dependencies:
-      '@types/dom-webcodecs': 0.1.13
-      '@types/wicg-file-system-access': 2020.9.8
 
   webpack-virtual-modules@0.6.2: {}
 

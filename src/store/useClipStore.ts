@@ -1,36 +1,16 @@
-import BaseElement from "@/classes/element/BaseElement";
-import ImageElement from "@/classes/element/ImageElement";
-import VideoElement from "@/classes/element/VideoElement";
 import previewCanvasManager from "@/classes/preview";
 import CanvasElement from "@/classes/preview/CanvasElement";
-import PreviewCanvasManager from "@/classes/preview/PreviewCanvasManager";
-import ImageSource from "@/classes/source/ImageSource";
-import VideoSource from "@/classes/source/VideoSource";
 import { updateCanvasElementKey } from "@/event-bus";
 import { Ratio } from "@/types/clip-config-types";
 import { ElementsMap } from "@/types/element-option-types";
 import { ClipCut } from "@/types/utils";
 // import muxVideo from "@/utils/muxVideo";
-import { muxVideo } from "@/utils/mux-video-webm";
+import { muxVideo } from "@/utils/mux-video-mp4";
 import { elementInPreview } from "@/utils/preview-utils";
-import { useDebounceFn, useEventBus } from "@vueuse/core";
+import { useEventBus } from "@vueuse/core";
 import { defineStore } from "pinia";
 const updateCanvasElementBus = useEventBus(updateCanvasElementKey)
 const mockerData: ElementsMap = {
-    // videos: [
-    //     new VideoElement({ width: 1920, height: 1080, source: new VideoSource({ width: 1920, height: 1080, duration: 60, cover: '', src: '', name: 'video1.mp4', file: new Blob(), size: 256 }) }),
-    //     new VideoElement({ width: 1920, height: 1080, source: new VideoSource({ width: 1920, height: 1080, duration: 60, cover: '', src: '', name: 'video2.mp4', file: new Blob(), size: 256 }) }),
-    //     new VideoElement({ width: 1920, height: 1080, source: new VideoSource({ width: 1920, height: 1080, duration: 60, cover: '', src: '', name: 'video3.mp4', file: new Blob(), size: 256 }) }),
-    //     new VideoElement({ width: 1920, height: 1080, source: new VideoSource({ width: 1920, height: 1080, duration: 60, cover: '', src: '', name: 'video4.mp4', file: new Blob(), size: 256 }) }),
-    //     new VideoElement({ width: 1920, height: 1080, source: new VideoSource({ width: 1920, height: 1080, duration: 60, cover: '', src: '', name: 'video5.mp4', file: new Blob(), size: 256 }) }),
-    //     new VideoElement({ width: 1920, height: 1080, source: new VideoSource({ width: 1920, height: 1080, duration: 60, cover: '', src: '', name: 'video6.mp4', file: new Blob(), size: 256 }) }),
-    //     new VideoElement({ width: 1920, height: 1080, source: new VideoSource({ width: 1920, height: 1080, duration: 60, cover: '', src: '', name: 'video7.mp4', file: new Blob(), size: 256 }) }),
-    //     new VideoElement({ width: 1920, height: 1080, source: new VideoSource({ width: 1920, height: 1080, duration: 60, cover: '', src: '', name: 'video8.mp4', file: new Blob(), size: 256 }) })
-    // ],
-    // images: [
-    //     new ImageElement({ width: 200, height: 200, source: new ImageSource({ width: 1920, height: 1080, src: '', image: new Image(), name: 'img1.jpg', file: new Blob(), size: 256 }) }),
-    //     new ImageElement({ width: 200, height: 200, source: new ImageSource({ width: 1920, height: 1080, src: '', image: new Image(), name: 'img2.jpg', file: new Blob(), size: 256 }) })
-    // ]，
     images: [],
     videos: []
 }

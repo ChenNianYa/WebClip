@@ -16,8 +16,8 @@ const getVideoSource = async (videoBlob: File) => {
             resolve(e);
         };
     });
-    const videoSrc = URL.createObjectURL(videoBlob)
-    video.src = videoSrc;
+    const src = URL.createObjectURL(videoBlob)
+    video.src = src;
     await loadVideoPromise;
     const canvas = document.createElement('canvas');
     canvas.height = video.videoHeight;
@@ -33,16 +33,20 @@ const getVideoSource = async (videoBlob: File) => {
         })
     })
     const cover = await canvasToUrl
+    const audio = new Audio()
+    audio
+    audio.src = src
     const videoSource = new VideoSource({
         name: videoBlob.name,
         file: videoBlob,
         size: videoBlob.size,
         duration: video.duration,
-        src: videoSrc,
+        src: src,
         width: video.videoWidth,
         height: video.videoHeight,
         cover,
-        video: video
+        video: video,
+        audio: audio
     })
     videoList.value.push(videoSource)
     canvas.remove()
@@ -50,6 +54,7 @@ const getVideoSource = async (videoBlob: File) => {
 const onDelete = (id: number) => {
     videoList.value = videoList.value.filter(v => v.id !== id)
 }
+
 const onAddTrack = (id: number) => {
     // 将source转化成element 加入到clip中
     const videoSource = videoList.value.find(v => v.id === id)
