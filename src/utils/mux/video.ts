@@ -1,31 +1,20 @@
 import VideoElement from '@/classes/element/VideoElement';
 import useClipStore from '@/store/useClipStore';
 import mp4box, { MP4ArrayBuffer, MP4File, MP4Info } from '@webav/mp4box.js';
-import { elementInPreview } from './preview-utils';
 import { Muxer, FileSystemWritableFileStreamTarget } from 'mp4-muxer';
+import { elementInPreview } from '../preview-utils';
 const framerate = 25
 const oneSecondInMicrosecond = 1000000
 const cts = oneSecondInMicrosecond / framerate
 const DataStream = mp4box.DataStream
-export const muxVideo = async () => {
+export const muxVideo = async (muxer: Muxer<FileSystemWritableFileStreamTarget>, writableStream: FileSystemWritableFileStream) => {
     const clipStore = useClipStore()
-    const writableStream = await getWritableFileStream()
-    if (writableStream === undefined) return
     const muxOffscreenCanvas = new OffscreenCanvas(clipStore.width, clipStore.height)
     const ctx = muxOffscreenCanvas.getContext('2d')
     if (!ctx) return
-    const fileSystemWritableFileStreamTarget = new FileSystemWritableFileStreamTarget(writableStream)
     const framesCount = framerate * Math.ceil(clipStore.duration)
-    const muxer = new Muxer({
-        target: fileSystemWritableFileStreamTarget,
-        video: {
-            codec: 'avc',
-            width: clipStore.width,
-            height: clipStore.height,
-            frameRate: framerate
-        },
-        fastStart: false
-    })
+    console.log('framesCount', framesCount);
+
     let muxNumber = 0;
     const videoEncoder = new VideoEncoder({
         output: async (chunk, meta) => {
@@ -35,15 +24,14 @@ export const muxVideo = async () => {
                 muxer.finalize();
                 await writableStream.close()
                 console.log('over');
-
             }
         },
         error: e => console.error(e)
     });
     videoEncoder.configure({
         codec: 'avc1.4D0032',
-        width: 1280,
-        height: 720,
+        width: clipStore.width,
+        height: clipStore.height,
         hardwareAcceleration: 'prefer-software'
     });
 
@@ -57,7 +45,7 @@ export const muxVideo = async () => {
         // console.log(id, videoFrame);
         outputFrames.push({ id, frame: videoFrame })
         if (decoderSampleCount !== outputFrames.length) return
-        console.log('success');
+        console.log(decoderIndex, 'success');
         ctx.clearRect(0, 0, clipStore.width, clipStore.height)
         // 画帧
         for (const outputFrame of outputFrames) {
@@ -135,7 +123,7 @@ export const muxVideo = async () => {
         timer = setTimeout(() => {
             // 说明16ms过去 还是没有结果，可能就是decoder失败
             if (i === decoderIndex && i !== framesCount) {
-                console.log('fail');
+                console.log(decoderIndex, 'fail');
                 // 先释放帧资源
                 for (const outputFrame of outputFrames) {
                     outputFrame.frame.close()
@@ -158,30 +146,9 @@ export const muxVideo = async () => {
         ibmp.close()
         frame.close()
     }
-    // decoderSamples(decoderIndex)
+    decoderSamples(decoderIndex)
 }
 
-// 获取可写入文件流 最后用来流式 的存入本地文件中
-const getWritableFileStream = async () => {
-    let folderHandle
-    try {
-        //@ts-ignore
-        folderHandle = await window.showDirectoryPicker();
-    } catch (error) {
-        // @ts-ignore
-        if (error.name === "AbortError") {
-            console.log("用户取消了文件夹选择。");
-        } else {
-            console.error("出现错误：", error);
-        }
-    }
-    if (!folderHandle) return
-    const handle: FileSystemDirectoryHandle = folderHandle
-    const fileName = 'test.mp4'
-    const fileHandle = await handle.getFileHandle(fileName, { create: true });
-    const writableStream = await fileHandle.createWritable();
-    return writableStream
-}
 const getDecoderFile = async (video: VideoElement, output: (frame: VideoFrame, id: number) => any): Promise<{ decoder: VideoDecoder, file: MP4File, info: MP4Info } | undefined> => {
     const decoderFile = mp4box.createFile()
     const videoDecoder = new VideoDecoder({
@@ -194,24 +161,8 @@ const getDecoderFile = async (video: VideoElement, output: (frame: VideoFrame, i
     })
     const decoderFileOnReady = new Promise<{ decoder: VideoDecoder, file: MP4File, info: MP4Info } | undefined>((resolve) => {
         decoderFile.onReady = async (info) => {
-            // console.log(decoderFile);
             const videoTrack = info.videoTracks[0];
             const video_track = decoderFile.getTrackById(videoTrack.id);
-            // const audioContext = new AudioContext();
-            // const buffer = await video.source.file.arrayBuffer()
-            // const res = await audioContext.decodeAudioData(buffer)
-            // // console.log(res);
-            // audioContext.close()
-            // const audio = new Audio()
-            // audio.oncanplaythrough = async (e) => {
-            //     audioContext.decodeAudioData()
-            // }
-            // const audioTrackBuffer = mp4box.getTrackBuffer(decoderFile, audioTrack.id);
-            // // @ts-ignore
-            // const audioContext = new AudioContext({ sampleRate: audioTrack.audio.sample_rate });
-            // audioContext.decodeAudioData(audioTrackBuffer).then(audioBuffer => {
-            //     console.log(audioBuffer);
-            // });
             let description
             for (const entry of video_track.mdia.minf.stbl.stsd.entries) {
                 // @ts-ignore

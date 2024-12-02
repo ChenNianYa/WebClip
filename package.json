@@ -12,6 +12,7 @@
     "@element-plus/icons-vue": "^2.3.1",
     "@vueuse/core": "^11.3.0",
     "@webav/mp4box.js": "0.5.4-fenghen",
+    "crunker": "^2.4.0",
     "element-plus": "^2.8.8",
     "mp4-muxer": "^5.1.5",
     "mp4box": "^0.5.3",
@@ -19,6 +20,7 @@
     "vue": "^3.5.12"
   },
   "devDependencies": {
+    "@types/dom-webcodecs": "^0.1.13",
     "@types/node": "^22.9.1",
     "@vitejs/plugin-vue": "^5.1.4",
     "autoprefixer": "^10.4.20",

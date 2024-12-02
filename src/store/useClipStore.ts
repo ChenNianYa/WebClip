@@ -4,8 +4,8 @@ import { updateCanvasElementKey } from "@/event-bus";
 import { Ratio } from "@/types/clip-config-types";
 import { ElementsMap } from "@/types/element-option-types";
 import { ClipCut } from "@/types/utils";
+import muxMP4 from "@/utils/mux";
 // import muxVideo from "@/utils/muxVideo";
-import { muxVideo } from "@/utils/mux-video-mp4";
 import { elementInPreview } from "@/utils/preview-utils";
 import { useEventBus } from "@vueuse/core";
 import { defineStore } from "pinia";
@@ -15,6 +15,8 @@ const mockerData: ElementsMap = {
     videos: []
 }
 const useClipStore = defineStore('clip', () => {
+    // 视频名称
+    const muxVideoName = ref('testmp4.mp4')
     // 轨道上的元素渲染
     const elements = ref<ElementsMap>({
         videos: [...mockerData.videos],
@@ -27,12 +29,11 @@ const useClipStore = defineStore('clip', () => {
             previewCanvasManager.value.activeElement = previewCanvasManager.value?.elements.find(v => v.id === val)
             previewCanvasManager.value.resetCtrlElPos()
         }
-
     })
     const activeElement = computed(() => {
         return Object.values(elements.value).flat().find(v => v.id === activeElementId.value)
     })
-    // 剪切的片段
+    // 剪切的片段  片段剪辑现在先不实现 感觉会很复杂 最后再提娜佳
     const clipCuts = ref<ClipCut[]>([])
     // 播放状态
     const playState = ref(false)
@@ -54,7 +55,7 @@ const useClipStore = defineStore('clip', () => {
     const ratio = ref<Ratio>(Ratio.Horizontal)
     const width = computed(() => ratio.value === Ratio.Horizontal ? 1920 : 100)
     const height = computed(() => ratio.value === Ratio.Horizontal ? 1080 : 100)
-    // preview canvas manager
+    // preview canvas manager  里面没有用响应式数据，所以用bus传递信息
     updateCanvasElementBus.on((e) => {
         const els = Object.values(elements.value).flat()
         for (const el of els) {
@@ -124,27 +125,18 @@ const useClipStore = defineStore('clip', () => {
             previewCanvasManager.value.addElement(new CanvasElement(image.id, imbp, image.width, image.height, image.x, image.y))
         }
     }
-    // preview 预览函数
+    // preview 预览函数  这里后面准备用html预览。  如果用canvas 逻辑写起来感觉会很复杂，而且会有bug感觉卡顿感也会强烈 用html就会刚刚好  canvas调整  html预览
     const preview = () => {
         playState.value = true
-        // let startTime = currentTime.value
-        // let start = Date.now()
-        // const play = () => {
-        //     requestAnimationFrame(() => {
-        //         const now = Date.now()
-        //         const currentTime = (now - start) / 1000 + startTime
-        //         updatePreviewCanvas(currentTime)
-        //         play()
-        //     })
-        // }
-        // requestAnimationFrame(play)
     }
     const pause = () => {
         playState.value = false
 
     }
     const exportVideo = async () => {
-        muxVideo()
+        // 核心值得单独写   utils/mux里
+        // muxVideo()
+        muxMP4()
     }
     // 通过id来更新元素
     const updateElemntStartTime = (id: number, startTime: number) => {
@@ -199,7 +191,8 @@ const useClipStore = defineStore('clip', () => {
         width,
         height,
         deleteElementById,
-        preview
+        preview,
+        muxVideoName
 
     }
 })

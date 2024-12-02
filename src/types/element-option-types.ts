@@ -20,6 +20,7 @@ export interface BaseElementOption {
 
 export type VideoElementOption = {
     source: VideoSource;
+    muted: boolean
 } & BaseElementOption
 
 export type ImageElementOption = {
