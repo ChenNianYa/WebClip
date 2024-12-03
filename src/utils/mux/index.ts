@@ -54,40 +54,51 @@ const muxMP4 = async () => {
     })
     // 单独执行还是一起执行呢，怕爆内存? 先单独执行吧
     if (audioBuffer) {
-        const data = audioBuffer.getChannelData(0)
-        const slice = audioBuffer.length / audioBuffer.duration / MuxVideoConfig.framerate
-        for (let i = 0; i < MuxVideoConfig.framerate * audioBuffer.duration; i++) {
-            const sample = new Uint8Array(data.slice(i * slice, (i + 1) * slice))
-            muxer.addAudioChunkRaw(sample, i % MuxVideoConfig.framerate === 0 ? 'key' : 'delta', i * MuxVideoConfig.cts, MuxVideoConfig.cts)
+        // crunker.play(audioBuffer)
+
+        const numChannels = audioBuffer.numberOfChannels;
+        let length = 0;
+        for (let i = 0; i < numChannels; i++) {
+            length += audioBuffer.getChannelData(i).length
         }
-        // sample=length/duration/framerate
-        // function convertAudioBufferToSamples(audioBuffer: AudioBuffer) {
-        //     const numberOfChannels = audioBuffer.numberOfChannels;
-        //     const length = audioBuffer.length;
-        //     const samples = [];
-        //     for (let i = 0; i < length; i++) {
-        //         for (let channel = 0; channel < numberOfChannels; channel++) {
-        //             samples.push();
-        //         }
-        //     }
-        //     return samples;
-        // }
-        // const samples=convertAudioBufferToSamples(audioBuffer)
+        const combinedData = new Float32Array(length)
+        for (let i = 0; i < numChannels; i++) {
+            audioBuffer.copyFromChannel(combinedData, i)
+        }
+        const audioData = new AudioData({
+            // 当前音频片段的时间偏移
+            timestamp: 0,
+            // 双声道
+            numberOfChannels: audioBuffer.numberOfChannels,
+            // 帧数，就是多少个数据点，因为双声道，前一半左声道后一半右声道，所以帧数需要除以 2
+            numberOfFrames: length / audioBuffer.numberOfChannels,
+            // 48KHz 采样率
+            sampleRate: audioBuffer.sampleRate,
+            // 通常 32位 左右声道并排的意思，更多 format 看 AudioData 文档
+            format: 'f32-planar',
+            data: combinedData,
+        });
+        console.log(audioData);
+        // muxer.addAudioChunkRaw(audioData, 'key', audioData.timestamp,audioData.duration)
+        const encoder = new AudioEncoder({
+            output: (chunk) => {
+                muxer.addAudioChunk(chunk)
+                // console.log(chunk);
+                // 编码（压缩）输出的 EncodedAudioChunk
+            },
+            error: console.error,
+        });
 
-        // console.log(audioBuffer, data);
+        encoder.configure({
+            // AAC 编码格式
+            codec: 'mp4a.40.2',
+            sampleRate: audioBuffer.sampleRate,
+            numberOfChannels: audioBuffer.numberOfChannels,
+        });
 
-        // const buffer = await crunker.export(audioBuffer, 'audio/mp3').blob.arrayBuffer()
-        // const arraybuffer = await crunker.export(audioBuffer, 'audio/mp3').blob.arrayBuffer()
-        // muxAudio(arraybuffer)
-        // {
-        // const data = new Uint8Array(buffer)
-        // muxer.addAudioChunkRaw(new Uint8Array(audioBuffer.getChannelData(0)), 'key', 0, MuxVideoConfig.cts)
-        // }
-        // console.log(muxer);
+        // // 编码原始数据对应的 AudioData
+        encoder.encode(audioData);
 
-
-
-        // }
     }
     // muxer.
     muxVideo(muxer, writableStream)
