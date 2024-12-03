@@ -116,7 +116,7 @@ export const muxVideo = async (muxer: Muxer<FileSystemWritableFileStreamTarget>,
                 data: sample.data
             });
             decoder.decode(chunk)
-            file.releaseUsedSamples(tid, i)
+            // file.releaseUsedSamples(tid, i)
         }
 
 
@@ -177,7 +177,7 @@ const getDecoderFile = async (video: VideoElement, output: (frame: VideoFrame, i
                 codec: videoTrack.codec.startsWith("vp08") ? "vp8" : videoTrack.codec,
                 codedWidth: info.videoTracks[0].track_width,
                 codedHeight: info.videoTracks[0].track_height,
-                description
+                description,
             })
             resolve({
                 file: decoderFile,
