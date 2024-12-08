@@ -168,7 +168,7 @@ export const muxVideo = async (muxer: Muxer<FileSystemWritableFileStreamTarget>,
             // 补帧数据，不然解析不了
             if (preFrameSamples) {
                 const preFrameSample = preFrameSamples[i]
-                if (preFrameSample.vid === frameSample.vid && (preFrameSample.index + 1) !== frameSample.index) {
+                if (preFrameSample && preFrameSample.vid === frameSample.vid && (preFrameSample.index + 1) !== frameSample.index) {
                     console.log(frameSample, preFrameSample);
                     for (let j = preFrameSample.index + 1; j < frameSample.index; j++) {
                         //@ts-ignore
