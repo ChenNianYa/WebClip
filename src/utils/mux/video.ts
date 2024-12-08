@@ -163,6 +163,8 @@ const getDecoderFile = async (video: VideoElement, output: (frame: VideoFrame, i
         decoderFile.onReady = async (info) => {
             const videoTrack = info.videoTracks[0];
             const video_track = decoderFile.getTrackById(videoTrack.id);
+            console.log(info, videoTrack, video_track);
+
             let description
             for (const entry of video_track.mdia.minf.stbl.stsd.entries) {
                 // @ts-ignore

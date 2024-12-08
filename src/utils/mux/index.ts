@@ -54,7 +54,7 @@ const muxMP4 = async () => {
     })
     // 单独执行还是一起执行呢，怕爆内存? 先单独执行吧
     if (audioBuffer) {
-        crunker.play(audioBuffer)
+        // crunker.play(audioBuffer)
 
 
 
@@ -80,13 +80,13 @@ const muxMP4 = async () => {
             format: 'f32-planar',
             data: combinedData,
         });
-        console.log(audioBuffer, audioData);
+        // console.log(audioBuffer, audioData);
         // muxer.addAudioChunkRaw(audioData, 'key', audioData.timestamp,audioData.duration)
         let i = 0;
         const encoder = new AudioEncoder({
             output: (chunk) => {
                 i++
-                console.log(chunk, i, encoder.encodeQueueSize);
+                // console.log(chunk, i, encoder.encodeQueueSize);
                 muxer.addAudioChunk(chunk)
 
                 // 编码（压缩）输出的 EncodedAudioChunk
@@ -104,11 +104,8 @@ const muxMP4 = async () => {
         // // 编码原始数据对应的 AudioData
         encoder.encode(audioData);
         await encoder.flush()
-        muxVideo(muxer, writableStream)
-        // audioData.close()
-
-
     }
+    muxVideo(muxer, writableStream)
 
 }
 
