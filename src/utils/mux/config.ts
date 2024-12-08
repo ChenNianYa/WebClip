@@ -1,4 +1,4 @@
-const framerate = 25
+const framerate = 24
 const oneSecondInMicrosecond = 1000000
 const cts = oneSecondInMicrosecond / framerate
 const MuxVideoConfig = {

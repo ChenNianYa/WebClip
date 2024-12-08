@@ -39,6 +39,8 @@ const useClipStore = defineStore('clip', () => {
     const playState = ref(false)
     // 播放的当前时间
     const currentTime = ref(0)
+    // 视频帧率
+    const frameRate = ref(25)
     // 最长时间，是个计算属性
     const duration = computed(() => {
         let duration = 0;
@@ -135,7 +137,6 @@ const useClipStore = defineStore('clip', () => {
     }
     const exportVideo = async () => {
         // 核心值得单独写   utils/mux里
-        // muxVideo()
         muxMP4()
     }
     // 通过id来更新元素
@@ -192,7 +193,8 @@ const useClipStore = defineStore('clip', () => {
         height,
         deleteElementById,
         preview,
-        muxVideoName
+        muxVideoName,
+        frameRate
 
     }
 })
