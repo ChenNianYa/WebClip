@@ -11,10 +11,14 @@ export const mergeAudioBuffer = async (crunker: Crunker) => {
         const buffer = await video.source.file.arrayBuffer()
         const info = await audioContext.decodeAudioData(buffer)
         const padBuffer = crunker.padAudio(info, 0, Math.ceil(video.startTime))
+        console.log(padBuffer);
+        return padBuffer
+
+
         // crunker.play(padBuffer)
         audioBuffers.push(padBuffer)
     }
-    return crunker.mergeAudio(audioBuffers)
+    // return crunker.mergeAudio(audioBuffers)
 }
 
 export const muxAudio = (buffer: ArrayBuffer) => {

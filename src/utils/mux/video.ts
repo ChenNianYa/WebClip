@@ -42,28 +42,34 @@ export const muxVideo = async (muxer: Muxer<FileSystemWritableFileStreamTarget>,
     let outputFrames: { id: number, frame: VideoFrame }[] = []
     let needAddMux = true
     const output = async (videoFrame: VideoFrame, id: number) => {
-        // console.log(id, videoFrame);
-        outputFrames.push({ id, frame: videoFrame })
-        if (decoderSampleCount !== outputFrames.length) return
-        console.log(decoderIndex, 'success');
-        ctx.clearRect(0, 0, clipStore.width, clipStore.height)
-        // 画帧
-        for (const outputFrame of outputFrames) {
-            const video = clipStore.elements.videos.find(v => v.id === outputFrame.id)
-            if (!video) return
-            ctx.drawImage(outputFrame.frame, video.x, video.y, video.width, video.height)
-            outputFrame.frame.close()
-        }
-        // 画图片
-        for (const img of clipStore.elements.images) {
-            const frameTime = decoderIndex / clipStore.frameRate
-            if (elementInPreview(img, frameTime)) {
-                ctx.drawImage(img.source.image, img.x, img.y, img.width, img.height)
+        if (!needAddMux) {
+            // console.log(videoFrame);
+            videoFrame.close()
+        } else {
+            // console.log(id, videoFrame);
+            outputFrames.push({ id, frame: videoFrame })
+            if (decoderSampleCount !== outputFrames.length) return
+            console.log(decoderIndex, 'success');
+            // ctx.clearRect(0, 0, clipStore.width, clipStore.height)
+            // 画帧
+            for (const outputFrame of outputFrames) {
+                const video = clipStore.elements.videos.find(v => v.id === outputFrame.id)
+                if (!video) return
+                ctx.drawImage(outputFrame.frame, video.x, video.y, video.width, video.height)
+                outputFrame.frame.close()
             }
+            // 画图片
+            for (const img of clipStore.elements.images) {
+                const frameTime = decoderIndex / clipStore.frameRate
+                if (elementInPreview(img, frameTime)) {
+                    ctx.drawImage(img.source.image, img.x, img.y, img.width, img.height)
+                }
+            }
+            encodeFrame(decoderIndex)
+            decoderIndex++
+            decoderSamples(decoderIndex)
         }
-        encodeFrame(decoderIndex)
-        decoderIndex++
-        decoderSamples(decoderIndex)
+
     }
 
     // 获取file和trak
@@ -117,9 +123,11 @@ export const muxVideo = async (muxer: Muxer<FileSystemWritableFileStreamTarget>,
                                     break;
                                 }
                             }
-                            if (count === (needRepeatFrameNum - 1)) {
+                            if (count === needRepeatFrameNum) {
                                 samples.push({ vid: id, index: decoderFiles[id].decoderNum })
                                 decoderFiles[id].decoderNum++;
+                            } else {
+                                samples.push({ vid: id, index: decoderFiles[id].decoderNum })
                             }
                         } else {
                             samples.push({ vid: id, index: decoderFiles[id].decoderNum })
@@ -164,7 +172,7 @@ export const muxVideo = async (muxer: Muxer<FileSystemWritableFileStreamTarget>,
                     console.log(frameSample, preFrameSample);
                     for (let j = preFrameSample.index + 1; j < frameSample.index; j++) {
                         //@ts-ignore
-                        const sample = file.getTrackSample(tid, index)
+                        const sample = file.getTrackSample(tid, j)
                         const type = sample.is_sync ? "key" : "delta";
                         needAddMux = false
                         // sample转换成EncodedVideoChunk,进而可以被VideoDecoder进行解码
@@ -174,6 +182,8 @@ export const muxVideo = async (muxer: Muxer<FileSystemWritableFileStreamTarget>,
                             duration: sample.duration,
                             data: sample.data
                         });
+                        // console.log(chunk);
+
                         decoder.decode(chunk)
                     }
                 }
@@ -190,37 +200,41 @@ export const muxVideo = async (muxer: Muxer<FileSystemWritableFileStreamTarget>,
                 duration: sample.duration,
                 data: sample.data
             });
-            try {
-                decoder.decode(chunk)
-            } catch (e) {
-                const de = resetDecoder()
-                if (de) {
-                    decoderFiles[vid].decoder = de
-                    const chunk = new EncodedVideoChunk({
-                        type: 'key',
-                        timestamp: sample.cts,
-                        duration: sample.duration,
-                        data: sample.data
-                    });
-                    de.decode(chunk)
-                }
+            decoder.decode(chunk)
+            // try {
 
-                // console.log(e);
+            // } catch (e) {
+            //     const de = resetDecoder()
+            //     if (de) {
+            //         decoderFiles[vid].decoder = de
+            //         const chunk = new EncodedVideoChunk({
+            //             type: 'key',
+            //             timestamp: sample.cts,
+            //             duration: sample.duration,
+            //             data: sample.data
+            //         });
+            //         de.decode(chunk)
+            //     }
 
-            }
+            //     // console.log(e);
+
+            // }
 
             // file.releaseUsedSamples(tid, i)
         }
 
 
-        timer = setTimeout(() => {
+        timer = setTimeout(async () => {
             // 说明16ms过去 还是没有结果，可能就是decoder失败
             if (i === decoderIndex && i !== framesCount) {
                 console.log(decoderIndex, 'fail');
+                // const blob = await muxOffscreenCanvas.convertToBlob()
+                // console.log(URL.createObjectURL(blob));
                 // 先释放帧资源
                 for (const outputFrame of outputFrames) {
                     outputFrame.frame.close()
                 }
+
                 // 渲染上一次画面
                 encodeFrame(i)
                 decoderIndex++
@@ -230,14 +244,20 @@ export const muxVideo = async (muxer: Muxer<FileSystemWritableFileStreamTarget>,
         }, 16);
 
     }
-    const encodeFrame = (count: number) => {
+    const encodeFrame = async (count: number) => {
         // WebM 文件只能有最大 32768 秒的 Matroska 并且每个簇必须以视频关键帧开始。因此，你需要告诉你的视频编码器至少每 32 秒将一个视频帧编码为关键帧
         // 记1秒为一次关键帧
-        const ibmp = muxOffscreenCanvas.transferToImageBitmap()
-        const frame = new VideoFrame(ibmp, { timestamp: cts * count })
-        videoEncoder.encode(frame, { keyFrame: count % (clipStore.frameRate * 10) === 0 })
-        ibmp.close()
-        frame.close()
+        // const blob = await muxOffscreenCanvas.convertToBlob()
+        // console.log(URL.createObjectURL(blob));
+        // ctx.save()
+        // ctx.save()
+        const ibmp = await createImageBitmap(muxOffscreenCanvas)
+        if (ibmp) {
+            const frame = new VideoFrame(ibmp, { timestamp: cts * count })
+            videoEncoder.encode(frame, { keyFrame: count % (clipStore.frameRate * 10) === 0 })
+            ibmp.close()
+            frame.close()
+        }
     }
     decoderSamples(decoderIndex)
 }
@@ -252,12 +272,6 @@ const getDecoderFile = async (video: VideoElement, output: (frame: VideoFrame, i
         },
         error: (e) => {
             console.log(e);
-            // if (config && decoderFileInfo) {
-            //     decoderFileInfo.decoder = new VideoDecoder(init)
-            //     videoDecoder.configure(config)
-            //     console.log(videoDecoder);
-
-            // }
         }
     }
     const resetDecoder = () => {

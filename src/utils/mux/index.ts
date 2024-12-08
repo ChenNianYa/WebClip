@@ -31,10 +31,10 @@ const muxMP4 = async () => {
     // 没有可写流就return吧，如果结果都放在内存里对大文件不一定放得下
     if (!writableStream) return
     const fileSystemWritableFileStreamTarget = new FileSystemWritableFileStreamTarget(writableStream)
-    // const crunker = new Crunker()
+    const crunker = new Crunker()
     // const framesCount = MuxVideoConfig.framerate * Math.ceil(clipStore.duration)
     // 1. 先合成音频  
-    // const audioBuffer = await mergeAudioBuffer(crunker)
+    const audioBuffer = await mergeAudioBuffer(crunker)
     // audioBuffer.
     // 创建muxer对象
     const muxer = new Muxer({
@@ -45,64 +45,64 @@ const muxMP4 = async () => {
             height: clipStore.height,
             frameRate: clipStore.frameRate
         },
-        // audio: {
-        //     codec: 'aac',
-        //     numberOfChannels: audioBuffer?.numberOfChannels ?? 1,
-        //     sampleRate: audioBuffer?.sampleRate ?? 48000
-        // },
+        audio: {
+            codec: 'aac',
+            numberOfChannels: audioBuffer?.numberOfChannels ?? 1,
+            sampleRate: audioBuffer?.sampleRate ?? 48000
+        },
         fastStart: false
     })
     // 单独执行还是一起执行呢，怕爆内存? 先单独执行吧
-    // if (audioBuffer) {
-    //     crunker.play(audioBuffer)
-    //     const numChannels = audioBuffer.numberOfChannels;
-    //     let length = 0;
-    //     for (let i = 0; i < numChannels; i++) {
-    //         length += audioBuffer.getChannelData(i).length
-    //     }
-    //     const combinedData = new Float32Array(length)
-    //     for (let i = 0; i < numChannels; i++) {
-    //         audioBuffer.copyFromChannel(combinedData, i)
-    //     }
-    //     const audioData = new AudioData({
-    //         // 当前音频片段的时间偏移
-    //         timestamp: 0,
-    //         // 双声道
-    //         numberOfChannels: audioBuffer.numberOfChannels,
-    //         // 帧数，就是多少个数据点，因为双声道，前一半左声道后一半右声道，所以帧数需要除以 2
-    //         numberOfFrames: length / audioBuffer.numberOfChannels,
-    //         // 48KHz 采样率
-    //         sampleRate: audioBuffer.sampleRate,
-    //         // 通常 32位 左右声道并排的意思，更多 format 看 AudioData 文档
-    //         format: 'f32-planar',
-    //         data: combinedData,
-    //     });
-    //     console.log(audioBuffer, audioData);
-    //     // muxer.addAudioChunkRaw(audioData, 'key', audioData.timestamp,audioData.duration)
-    //     let i = 0;
-    //     const encoder = new AudioEncoder({
-    //         output: (chunk) => {
-    //             i++
-    //             console.log(chunk, i, encoder.encodeQueueSize);
-    //             muxer.addAudioChunk(chunk)
+    if (audioBuffer) {
+        // crunker.play(audioBuffer)
+        const numChannels = audioBuffer.numberOfChannels;
+        let length = 0;
+        for (let i = 0; i < numChannels; i++) {
+            length += audioBuffer.getChannelData(i).length
+        }
+        const combinedData = new Float32Array(length)
+        for (let i = 0; i < numChannels; i++) {
+            audioBuffer.copyFromChannel(combinedData, i)
+        }
+        const audioData = new AudioData({
+            // 当前音频片段的时间偏移
+            timestamp: 0,
+            // 双声道
+            numberOfChannels: audioBuffer.numberOfChannels,
+            // 帧数，就是多少个数据点，因为双声道，前一半左声道后一半右声道，所以帧数需要除以 2
+            numberOfFrames: length / audioBuffer.numberOfChannels,
+            // 48KHz 采样率
+            sampleRate: audioBuffer.sampleRate,
+            // 通常 32位 左右声道并排的意思，更多 format 看 AudioData 文档
+            format: 'f32-planar',
+            data: combinedData,
+        });
+        // console.log(audioBuffer, audioData);
+        // muxer.addAudioChunkRaw(audioData, 'key', audioData.timestamp,audioData.duration)
+        let i = 0;
+        const encoder = new AudioEncoder({
+            output: (chunk) => {
+                i++
+                // console.log(chunk, i, encoder.encodeQueueSize);
+                muxer.addAudioChunk(chunk)
 
-    //             // 编码（压缩）输出的 EncodedAudioChunk
-    //         },
-    //         error: console.error,
-    //     });
+                // 编码（压缩）输出的 EncodedAudioChunk
+            },
+            error: console.error,
+        });
 
-    //     encoder.configure({
-    //         // AAC 编码格式
-    //         codec: 'mp4a.40.2',
-    //         sampleRate: audioBuffer.sampleRate,
-    //         numberOfChannels: audioBuffer.numberOfChannels,
-    //     });
+        encoder.configure({
+            // AAC 编码格式
+            codec: 'mp4a.40.2',
+            sampleRate: audioBuffer.sampleRate,
+            numberOfChannels: audioBuffer.numberOfChannels,
+        });
 
-    //     // // 编码原始数据对应的 AudioData
-    //     encoder.encode(audioData);
-    //     await encoder.flush()
-    //     // audioData.close()
-    // }
+        // // 编码原始数据对应的 AudioData
+        encoder.encode(audioData);
+        await encoder.flush()
+        // audioData.close()
+    }
     muxVideo(muxer, writableStream)
 
 }
