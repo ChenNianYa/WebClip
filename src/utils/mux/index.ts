@@ -43,7 +43,7 @@ const muxMP4 = async () => {
             codec: 'avc',
             width: clipStore.width,
             height: clipStore.height,
-            frameRate: MuxVideoConfig.framerate
+            frameRate: clipStore.frameRate
         },
         audio: {
             codec: 'aac',
@@ -54,10 +54,7 @@ const muxMP4 = async () => {
     })
     // 单独执行还是一起执行呢，怕爆内存? 先单独执行吧
     if (audioBuffer) {
-        // crunker.play(audioBuffer)
-
-
-
+        // // crunker.play(audioBuffer)
         const numChannels = audioBuffer.numberOfChannels;
         let length = 0;
         for (let i = 0; i < numChannels; i++) {
@@ -104,6 +101,7 @@ const muxMP4 = async () => {
         // // 编码原始数据对应的 AudioData
         encoder.encode(audioData);
         await encoder.flush()
+        // audioData.close()
     }
     muxVideo(muxer, writableStream)
 
