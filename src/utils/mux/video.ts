@@ -50,7 +50,7 @@ export const muxVideo = async (muxer: Muxer<FileSystemWritableFileStreamTarget>,
             outputFrames.push({ id, frame: videoFrame })
             if (decoderSampleCount !== outputFrames.length) return
             console.log(decoderIndex, 'success');
-            // ctx.clearRect(0, 0, clipStore.width, clipStore.height)
+            ctx.clearRect(0, 0, clipStore.width, clipStore.height)
             // 画帧
             for (const outputFrame of outputFrames) {
                 const video = clipStore.elements.videos.find(v => v.id === outputFrame.id)
