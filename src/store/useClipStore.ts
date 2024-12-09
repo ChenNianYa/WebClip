@@ -4,10 +4,13 @@ import { updateCanvasElementKey } from "@/event-bus";
 import { Ratio } from "@/types/clip-config-types";
 import { ElementsMap } from "@/types/element-option-types";
 import { ClipCut } from "@/types/utils";
+import { ffmpeg } from "@/utils/ffmpeg";
 import muxMP4 from "@/utils/mux";
 // import muxVideo from "@/utils/muxVideo";
 import { elementInPreview } from "@/utils/preview-utils";
+import { fetchFile } from "@ffmpeg/util";
 import { useEventBus } from "@vueuse/core";
+import { FFprobeWorker } from "ffprobe-wasm";
 import { defineStore } from "pinia";
 const updateCanvasElementBus = useEventBus(updateCanvasElementKey)
 const mockerData: ElementsMap = {
@@ -137,7 +140,67 @@ const useClipStore = defineStore('clip', () => {
     }
     const exportVideo = async () => {
         // 核心值得单独写   utils/mux里
-        muxMP4()
+        for (const video of elements.value.videos) {
+            const worker = new FFprobeWorker()
+            const info = await worker.getFileInfo(video.source.file)
+            console.log(info);
+
+            // console.log(video.source.src, ffmpeg);
+            console.time('get frame')
+            await ffmpeg.writeFile(video.source.name, await fetchFile(video.source.file))
+            await ffmpeg.exec(["-ss", "00:00:30", "-i", video.source.name, "-vf", `select='eq(n,1)'`, "-vframes", "1", "-preset", "ultrafast", "output.png"])
+            console.timeEnd('get frame')
+            const data = await ffmpeg.readFile('output.png')
+            if (data instanceof Uint8Array) {
+                const blob = new Blob([data.buffer], { type: 'image/png' })
+                const url = URL.createObjectURL(blob)
+                console.log(url);
+                // URL.revokeObjectURL(url)
+            }
+
+            // const getFarame = async (i: number) => {
+            //     await ffmpeg.exec(["-i", video.source.name, "-vf", `select='eq(n,${i})'`, "-vframes", "1", "-preset", "ultrafast", "output.png"])
+            //     const data = await ffmpeg.readFile('output.png')
+            //     if (data instanceof Uint8Array) {
+            //         const blob = new Blob([data.buffer], { type: 'image/png' })
+            //         const url = URL.createObjectURL(blob)
+            //         URL.revokeObjectURL(url)
+            //     }
+            //     await ffmpeg.deleteFile('output.png')
+            // }
+            // for (let i = 0; i < 200; i++) {
+            //     console.log(i);
+
+            //     await getFarame(i)
+
+            // }
+            console.log('over');
+
+            // // await ffmpeg.exec(["-v", "error", "-i", video.source.name])
+            // // await ffmpeg.exec(['-i', video.source.name, '-f', 'null', '-'])
+            // const data = await ffmpeg.readFile('output.png')
+            // if (data instanceof Uint8Array) {
+            //     const blob = new Blob([data.buffer], { type: 'image/png' })
+            //     console.log(URL.createObjectURL(blob));
+            // }
+            // await ffmpeg.exec(["-i", video.source.name, "-vf", "select='eq(n,198)'", "-vframes", "1", "output.png"])
+            // // await ffmpeg.exec(["-v", "error", "-i", video.source.name])
+            // // await ffmpeg.exec(['-i', video.source.name, '-f', 'null', '-'])
+            // const data2 = await ffmpeg.readFile('output.png')
+            // if (data2 instanceof Uint8Array) {
+            //     const blob = new Blob([data2.buffer], { type: 'image/png' })
+            //     console.log(URL.createObjectURL(blob));
+            // }
+            // // await ffmpeg.exec(["ffprobe", "-v", "error", "select_streams", "v:0", "count_packets ", "show_entries", "stream=nb_read_frames", "of", "csv=p=0", video.source.name])
+            // // const res=await ffmpeg.exec(["-i", video.source.name])
+            // // console.log(res);
+
+            // ffmpeg.deleteFile(video.source.name)
+            // await fetchFile(video.source.file)
+            // const data = await fetchFile(video.source.file)
+            // console.log(data);
+        }
+        // muxMP4()
     }
     // 通过id来更新元素
     const updateElemntStartTime = (id: number, startTime: number) => {
