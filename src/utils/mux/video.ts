@@ -42,39 +42,65 @@ export const muxVideo = async (muxer: Muxer<FileSystemWritableFileStreamTarget>,
     let outputFrames: { id: number, frame: VideoFrame }[] = []
     let needAddMux = true
     const output = async (videoFrame: VideoFrame, id: number) => {
-        if (!needAddMux) {
-            // console.log(videoFrame);
-            videoFrame.close()
-        } else {
-            // console.log(id, videoFrame);
-            outputFrames.push({ id, frame: videoFrame })
-            if (decoderSampleCount !== outputFrames.length) return
-            console.log(decoderIndex, 'success');
-            ctx.clearRect(0, 0, clipStore.width, clipStore.height)
-            // 画帧
-            for (const outputFrame of outputFrames) {
-                const video = clipStore.elements.videos.find(v => v.id === outputFrame.id)
-                if (!video) return
-                ctx.drawImage(outputFrame.frame, video.x, video.y, video.width, video.height)
-                outputFrame.frame.close()
-            }
-            // 画图片
-            for (const img of clipStore.elements.images) {
-                const frameTime = decoderIndex / clipStore.frameRate
-                if (elementInPreview(img, frameTime)) {
-                    ctx.drawImage(img.source.image, img.x, img.y, img.width, img.height)
-                }
-            }
-            encodeFrame(decoderIndex)
-            decoderIndex++
-            decoderSamples(decoderIndex)
+        outputFrames.push({ id, frame: videoFrame })
+        if (decoderSampleCount !== outputFrames.length) return
+        console.log(decoderIndex, 'success');
+        ctx.clearRect(0, 0, clipStore.width, clipStore.height)
+        // 画帧
+        for (const outputFrame of outputFrames) {
+            const video = clipStore.elements.videos.find(v => v.id === outputFrame.id)
+            if (!video) return
+            ctx.drawImage(outputFrame.frame, video.x, video.y, video.width, video.height)
+            outputFrame.frame.close()
         }
+        // 画图片
+        for (const img of clipStore.elements.images) {
+            const frameTime = decoderIndex / clipStore.frameRate
+            if (elementInPreview(img, frameTime)) {
+                ctx.drawImage(img.source.image, img.x, img.y, img.width, img.height)
+            }
+        }
+        encodeFrame(decoderIndex)
+        decoderIndex++
+        decoderSamples(decoderIndex)
+        // if (!needAddMux) {
+        //     // console.log(videoFrame);
+        //     videoFrame.close()
+        // } else {
+        //     // console.log(id, videoFrame);
+        //     outputFrames.push({ id, frame: videoFrame })
+        //     if (decoderSampleCount !== outputFrames.length) return
+        //     console.log(decoderIndex, 'success');
+        //     ctx.clearRect(0, 0, clipStore.width, clipStore.height)
+        //     // 画帧
+        //     for (const outputFrame of outputFrames) {
+        //         const video = clipStore.elements.videos.find(v => v.id === outputFrame.id)
+        //         if (!video) return
+        //         ctx.drawImage(outputFrame.frame, video.x, video.y, video.width, video.height)
+        //         outputFrame.frame.close()
+        //     }
+        //     // 画图片
+        //     for (const img of clipStore.elements.images) {
+        //         const frameTime = decoderIndex / clipStore.frameRate
+        //         if (elementInPreview(img, frameTime)) {
+        //             ctx.drawImage(img.source.image, img.x, img.y, img.width, img.height)
+        //         }
+        //     }
+        //     encodeFrame(decoderIndex)
+        //     decoderIndex++
+        //     decoderSamples(decoderIndex)
+        // }
 
+    }
+    const error = async () => {
+        muxer.finalize();
+        await writableStream.close()
+        console.log('over');
     }
 
     // 获取file和trak
     for (const video of clipStore.elements.videos) {
-        const res = await getDecoderFile(video, output)
+        const res = await getDecoderFile(video, output, error)
         if (res) {
             decoderFiles[video.id] = { ...res, decoderNum: 0 }
         }
@@ -260,10 +286,11 @@ export const muxVideo = async (muxer: Muxer<FileSystemWritableFileStreamTarget>,
             frame.close()
         }
     }
+
     decoderSamples(decoderIndex)
 }
 
-const getDecoderFile = async (video: VideoElement, output: (frame: VideoFrame, id: number) => any): Promise<DecoderFileInfo | undefined> => {
+const getDecoderFile = async (video: VideoElement, output: (frame: VideoFrame, id: number) => any, error: () => Promise<void>): Promise<DecoderFileInfo | undefined> => {
     let config: VideoDecoderConfig
     let decoderFileInfo: DecoderFileInfo | undefined = undefined
     const decoderFile = mp4box.createFile()
@@ -271,8 +298,8 @@ const getDecoderFile = async (video: VideoElement, output: (frame: VideoFrame, i
         output: (v) => {
             output(v, video.id)
         },
-        error: (e) => {
-            console.log(e);
+        error: async (e) => {
+            await error()
         }
     }
     const resetDecoder = () => {
