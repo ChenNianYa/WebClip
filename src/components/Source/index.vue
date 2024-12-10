@@ -6,8 +6,12 @@
         <el-tab-pane label="图片" name="2">
             <ImageTab />
         </el-tab-pane>
-        <el-tab-pane label="花字" name="3">花字</el-tab-pane>
-        <el-tab-pane label="音频" name="4">音频</el-tab-pane>
+        <el-tab-pane label="花字" name="3">
+            <TextTab />
+        </el-tab-pane>
+        <el-tab-pane label="音频" name="4">
+            <AudioTab />
+        </el-tab-pane>
     </el-tabs>
 </template>
 <script setup lang="ts">

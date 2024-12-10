@@ -2,6 +2,7 @@
  * BaseElement 配置选项
  */
 
+import AudioElement from "@/classes/element/AudioElement";
 import ImageElement from "@/classes/element/ImageElement";
 import VideoElement from "@/classes/element/VideoElement";
 import ImageSource from "@/classes/source/ImageSource";
@@ -20,7 +21,7 @@ export interface BaseElementOption {
 
 export type VideoElementOption = {
     source: VideoSource;
-    muted: boolean
+    muted?: boolean
 } & BaseElementOption
 
 export type ImageElementOption = {
@@ -29,5 +30,5 @@ export type ImageElementOption = {
 
 export interface ElementsMap {
     videos: VideoElement[],
-    images: ImageElement[]
+    images: ImageElement[],
 }

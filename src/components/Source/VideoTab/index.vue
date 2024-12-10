@@ -5,8 +5,8 @@
 <script setup lang="ts">
 import VideoElement from '@/classes/element/VideoElement';
 import VideoSource from '@/classes/source/VideoSource';
-import useVideoElementStore from '@/store/useVideoElementStore';
-const videoElememtStore = useVideoElementStore()
+import useVideoStore from '@/store/useVideoStore';
+const videoStore = useVideoStore()
 const videoList = ref<VideoSource[]>([])
 const getVideoSource = async (videoBlob: File) => {
     const video = document.createElement('video');
@@ -33,9 +33,6 @@ const getVideoSource = async (videoBlob: File) => {
         })
     })
     const cover = await canvasToUrl
-    const audio = new Audio()
-    audio
-    audio.src = src
     const videoSource = new VideoSource({
         name: videoBlob.name,
         file: videoBlob,
@@ -46,7 +43,6 @@ const getVideoSource = async (videoBlob: File) => {
         height: video.videoHeight,
         cover,
         video: video,
-        audio: audio
     })
     videoList.value.push(videoSource)
     canvas.remove()
@@ -64,6 +60,6 @@ const onAddTrack = (id: number) => {
         height: videoSource.height,
         source: videoSource
     })
-    videoElememtStore.addVideoElement(videoElement)
+    videoStore.addVideoElement(videoElement)
 }
 </script>

@@ -2,7 +2,7 @@ import VideoElement from "@/classes/element/VideoElement";
 import { defineStore, storeToRefs } from "pinia";
 import useClipStore from "./useClipStore";
 
-const useVideoElementStore = defineStore('videoElement', () => {
+const useVideoStore = defineStore('video', () => {
     const clipStore = useClipStore()
     const { activeElementId } = storeToRefs(clipStore)
     // 增加videoElemnt
@@ -17,4 +17,4 @@ const useVideoElementStore = defineStore('videoElement', () => {
     }
 })
 
-export default useVideoElementStore
+export default useVideoStore

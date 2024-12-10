@@ -91,55 +91,56 @@ export const muxVideo = async (muxer: Muxer<FileSystemWritableFileStreamTarget>,
             if (elementInPreview(video, frameTime)) {
                 if (decoderFiles[id].info.videoTracks[0].nb_samples > decoderFiles[id].decoderNum) {
                     // console.log(decoderFiles[id].frameRate, clipStore.frameRate);
-
+                    samples.push({ vid: id, index: decoderFiles[id].decoderNum })
+                    decoderFiles[id].decoderNum++;
                     // @ts-ignore
                     // const sample = decoderFiles[id].file.getTrackSample(decoderFiles[id].info.videoTracks[0].id, decoderFiles[id].decoderNum)
 
-                    if (decoderFiles[id].frameRate > clipStore.frameRate) {
-                        // 算一下当前是第几秒
-                        const seconed = Math.floor(decoderFiles[id].decoderNum / decoderFiles[id].frameRate)
-                        // 算一下当前是该秒下第几帧
-                        const frameNum = decoderFiles[id].decoderNum % decoderFiles[id].frameRate
-                        // console.log(seconed, frameNum, decoderFiles[id].decoderNum, decoderFiles[id].frameRate)
-                        // 多的直接去掉   不是很合理，但是方便
-                        if (frameNum >= clipStore.frameRate) {
-                            samples.push({ vid: id, index: decoderFiles[id].decoderNum })
-                            decoderFiles[id].decoderNum = (seconed + 1) * decoderFiles[id].frameRate
-                        } else {
-                            samples.push({ vid: id, index: decoderFiles[id].decoderNum })
-                            decoderFiles[id].decoderNum++;
-                        }
+                    // if (decoderFiles[id].frameRate > clipStore.frameRate) {
+                    //     // 算一下当前是第几秒
+                    //     const seconed = Math.floor(decoderFiles[id].decoderNum / decoderFiles[id].frameRate)
+                    //     // 算一下当前是该秒下第几帧
+                    //     const frameNum = decoderFiles[id].decoderNum % decoderFiles[id].frameRate
+                    //     // console.log(seconed, frameNum, decoderFiles[id].decoderNum, decoderFiles[id].frameRate)
+                    //     // 多的直接去掉   不是很合理，但是方便
+                    //     if (frameNum >= clipStore.frameRate) {
+                    //         samples.push({ vid: id, index: decoderFiles[id].decoderNum })
+                    //         decoderFiles[id].decoderNum = (seconed + 1) * decoderFiles[id].frameRate
+                    //     } else {
+                    //         samples.push({ vid: id, index: decoderFiles[id].decoderNum })
+                    //         decoderFiles[id].decoderNum++;
+                    //     }
 
-                    } else if (decoderFiles[id].frameRate < clipStore.frameRate) {
-                        // 默认最后一帧重复
-                        const needRepeatFrameNum = clipStore.frameRate - decoderFiles[id].frameRate
-                        const frameNum = decoderFiles[id].decoderNum % decoderFiles[id].frameRate
-                        if (frameNum === (decoderFiles[id].frameRate - 1)) {
-                            let count = 0;
-                            for (let j = i - 1; j >= 0; j--) {
-                                if (samplesResult[j].find(v => (v.vid === id && v.index === decoderFiles[id].decoderNum))) {
-                                    count++
-                                } else {
-                                    break;
-                                }
-                            }
-                            if (count === needRepeatFrameNum) {
-                                samples.push({ vid: id, index: decoderFiles[id].decoderNum })
-                                decoderFiles[id].decoderNum++;
-                            } else {
-                                samples.push({ vid: id, index: decoderFiles[id].decoderNum })
-                            }
-                        } else {
-                            samples.push({ vid: id, index: decoderFiles[id].decoderNum })
-                            decoderFiles[id].decoderNum++;
-                        }
-                        // const frameNum = decoderFiles[id].decoderNum % decoderFiles[id].frameRate
-                        // const interver = Math.floor(decoderFiles[id].frameRate / clipStore.frameRate)
-                        // 从samplesResult 根据i值往前找，看重复几帧
-                    } else {
-                        samples.push({ vid: id, index: decoderFiles[id].decoderNum })
-                        decoderFiles[id].decoderNum++;
-                    }
+                    // } else if (decoderFiles[id].frameRate < clipStore.frameRate) {
+                    //     // 默认最后一帧重复
+                    //     const needRepeatFrameNum = clipStore.frameRate - decoderFiles[id].frameRate
+                    //     const frameNum = decoderFiles[id].decoderNum % decoderFiles[id].frameRate
+                    //     if (frameNum === (decoderFiles[id].frameRate - 1)) {
+                    //         let count = 0;
+                    //         for (let j = i - 1; j >= 0; j--) {
+                    //             if (samplesResult[j].find(v => (v.vid === id && v.index === decoderFiles[id].decoderNum))) {
+                    //                 count++
+                    //             } else {
+                    //                 break;
+                    //             }
+                    //         }
+                    //         if (count === needRepeatFrameNum) {
+                    //             samples.push({ vid: id, index: decoderFiles[id].decoderNum })
+                    //             decoderFiles[id].decoderNum++;
+                    //         } else {
+                    //             samples.push({ vid: id, index: decoderFiles[id].decoderNum })
+                    //         }
+                    //     } else {
+                    //         samples.push({ vid: id, index: decoderFiles[id].decoderNum })
+                    //         decoderFiles[id].decoderNum++;
+                    //     }
+                    //     // const frameNum = decoderFiles[id].decoderNum % decoderFiles[id].frameRate
+                    //     // const interver = Math.floor(decoderFiles[id].frameRate / clipStore.frameRate)
+                    //     // 从samplesResult 根据i值往前找，看重复几帧
+                    // } else {
+                    //     samples.push({ vid: id, index: decoderFiles[id].decoderNum })
+                    //     decoderFiles[id].decoderNum++;
+                    // }
 
                 }
 
@@ -166,29 +167,29 @@ export const muxVideo = async (muxer: Muxer<FileSystemWritableFileStreamTarget>,
             const { file, decoder, info, resetDecoder } = decoderFiles[vid]
             const tid = info.videoTracks[0].id
             // 补帧数据，不然解析不了
-            if (preFrameSamples) {
-                const preFrameSample = preFrameSamples[i]
-                if (preFrameSample && preFrameSample.vid === frameSample.vid && (preFrameSample.index + 1) !== frameSample.index) {
-                    console.log(frameSample, preFrameSample);
-                    for (let j = preFrameSample.index + 1; j < frameSample.index; j++) {
-                        //@ts-ignore
-                        const sample = file.getTrackSample(tid, j)
-                        const type = sample.is_sync ? "key" : "delta";
-                        needAddMux = false
-                        // sample转换成EncodedVideoChunk,进而可以被VideoDecoder进行解码
-                        const chunk = new EncodedVideoChunk({
-                            type: type,
-                            timestamp: sample.cts,
-                            duration: sample.duration,
-                            data: sample.data
-                        });
-                        // console.log(chunk);
+            // if (preFrameSamples) {
+            //     const preFrameSample = preFrameSamples[i]
+            //     if (preFrameSample && preFrameSample.vid === frameSample.vid && (preFrameSample.index + 1) !== frameSample.index) {
+            //         console.log(frameSample, preFrameSample);
+            //         for (let j = preFrameSample.index + 1; j < frameSample.index; j++) {
+            //             //@ts-ignore
+            //             const sample = file.getTrackSample(tid, j)
+            //             const type = sample.is_sync ? "key" : "delta";
+            //             needAddMux = false
+            //             // sample转换成EncodedVideoChunk,进而可以被VideoDecoder进行解码
+            //             const chunk = new EncodedVideoChunk({
+            //                 type: type,
+            //                 timestamp: sample.cts,
+            //                 duration: sample.duration,
+            //                 data: sample.data
+            //             });
+            //             // console.log(chunk);
 
-                        decoder.decode(chunk)
-                    }
-                }
+            //             decoder.decode(chunk)
+            //         }
+            //     }
 
-            }
+            // }
             //@ts-ignore
             const sample = file.getTrackSample(tid, index)
             const type = sample.is_sync ? "key" : "delta";

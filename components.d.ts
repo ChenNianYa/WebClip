@@ -7,6 +7,8 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AudioList: typeof import('./src/components/Source/AudioTab/AudioList.vue')['default']
+    AudioTab: typeof import('./src/components/Source/AudioTab/index.vue')['default']
     ClipCutAreas: typeof import('./src/components/Track/Timeline/ClipCutAreas.vue')['default']
     Config: typeof import('./src/components/Config/index.vue')['default']
     Control: typeof import('./src/components/Control/index.vue')['default']
@@ -29,6 +31,8 @@ declare module 'vue' {
     Info: typeof import('./src/components/Info/index.vue')['default']
     Preview: typeof import('./src/components/Preview/index.vue')['default']
     Source: typeof import('./src/components/Source/index.vue')['default']
+    Text1: typeof import('./src/components/Source/TextTab/TextTemplate/text1.js')['default']
+    TextTab: typeof import('./src/components/Source/TextTab/index.vue')['default']
     Timeline: typeof import('./src/components/Track/Timeline/index.vue')['default']
     TimeLineHeader: typeof import('./src/components/Track/Timeline/TimeLineHeader.vue')['default']
     Track: typeof import('./src/components/Track/index.vue')['default']

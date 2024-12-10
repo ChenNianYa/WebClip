@@ -47,7 +47,7 @@ const trackMouseMove = (e: MouseEvent) => {
     e.preventDefault()
     if (!activeElementId.value) return
     const selectRow = props.dataList.find(v => v.id === activeElementId.value)
-    if (isMouseDown && selectRow) {
+    if (isMouseDown && selectRow && selectRow.moveable) {
         const temp = e.movementX / props.perSecondPx
         let time = selectRow.startTime + temp
         if (time < 0) { time = 0 }
@@ -78,7 +78,7 @@ const leftMouseMove = (e: MouseEvent) => {
     e.stopPropagation()
     if (!activeElementId.value) return
     const selectRow = props.dataList.find(v => v.id === activeElementId.value)
-    if (isLeftMouseDown && selectRow) {
+    if (isLeftMouseDown && selectRow && selectRow.moveable && selectRow.stretchable) {
         const temp = e.movementX / props.perSecondPx
         const duration = selectRow.duration - temp
         const startTime = selectRow.startTime + temp
@@ -113,7 +113,7 @@ const rightMouseMove = (e: MouseEvent) => {
     e.stopPropagation()
     if (!activeElementId.value) return
     const selectRow = props.dataList.find(v => v.id === activeElementId.value)
-    if (isRightMouseDown && selectRow) {
+    if (isRightMouseDown && selectRow && selectRow.stretchable) {
         const temp = e.movementX / props.perSecondPx
         const duration = selectRow.duration + temp
         if (duration <= 2) {

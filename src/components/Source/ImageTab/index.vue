@@ -6,8 +6,8 @@
 <script setup lang="ts">
 import ImageElement from '@/classes/element/ImageElement';
 import ImageSource from '@/classes/source/ImageSource';
-import useImageElementStore from '@/store/useImageElementStore';
-const imageElementStore = useImageElementStore()
+import useImageStore from '@/store/useImageStore';
+const imageStore = useImageStore()
 const imageList = ref<ImageSource[]>([])
 const getImageSource = async (imageBlob: File) => {
     const src = URL.createObjectURL(imageBlob)
@@ -44,6 +44,6 @@ const onAddTrack = (id: number) => {
         height: imageSource.height,
         source: imageSource
     })
-    imageElementStore.addImageElement(imageElement)
+    imageStore.addImageElement(imageElement)
 }
 </script>

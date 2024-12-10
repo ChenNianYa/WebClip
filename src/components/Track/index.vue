@@ -5,9 +5,11 @@
         @update-duration="clipStore.updateElementDuration" class="absolute w-full h-full" />
 </template>
 <script setup lang="ts">
+import useAudioStore from '@/store/useAudioStore';
 import useClipStore from '@/store/useClipStore';
 import { TrackItem } from '@/types/timeline-types';
 const clipStore = useClipStore()
+const audioStore = useAudioStore()
 const perSecondPx = ref(10)
 const list = computed<TrackItem[]>(() => {
     const list: TrackItem[] = []
@@ -18,6 +20,7 @@ const list = computed<TrackItem[]>(() => {
             startTime: video.startTime,
             name: video.source.name,
             stretchable: false,
+            moveable: true,
         })
     }
     for (const image of clipStore.elements.images) {
@@ -26,7 +29,18 @@ const list = computed<TrackItem[]>(() => {
             duration: image.duration,
             startTime: image.startTime,
             name: image.source.name,
-            stretchable: true
+            stretchable: true,
+            moveable: true
+        })
+    }
+    for (const audio of audioStore.audioElementList) {
+        list.push({
+            id: audio.id,
+            duration: clipStore.duration,
+            startTime: 0,
+            name: audio.source.name,
+            stretchable: false,
+            moveable: false
         })
     }
     return list

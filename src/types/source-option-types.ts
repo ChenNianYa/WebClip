@@ -21,3 +21,8 @@ export type ImageSourceOption = {
     height: number
     image: HTMLImageElement
 } & BaseSource
+
+export type AudioSourceOption = {
+    duration: number
+    src: string
+} & BaseSource

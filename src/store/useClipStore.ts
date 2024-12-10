@@ -10,17 +10,13 @@ import { elementInPreview } from "@/utils/preview-utils";
 import { useEventBus } from "@vueuse/core";
 import { defineStore } from "pinia";
 const updateCanvasElementBus = useEventBus(updateCanvasElementKey)
-const mockerData: ElementsMap = {
-    images: [],
-    videos: []
-}
 const useClipStore = defineStore('clip', () => {
     // 视频名称
     const muxVideoName = ref('testmp4.mp4')
     // 轨道上的元素渲染
     const elements = ref<ElementsMap>({
-        videos: [...mockerData.videos],
-        images: [...mockerData.images]
+        videos: [],
+        images: [],
     })
     // 激活的元素
     const activeElementId = ref<number>(0)
