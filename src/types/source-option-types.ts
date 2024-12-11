@@ -1,3 +1,4 @@
+import LibAV from "libav.js"
 import BaseSource from "../classes/source/BaseSource"
 
 export interface BaseSourceOption {
@@ -12,7 +13,10 @@ export type VideoSourceOption = {
     src: string
     width: number
     height: number
-    video: HTMLVideoElement
+    streams: LibAV.Stream[]
+    videoStreamIndex: number,
+    audioStreamIndex: number,
+    fc: number // format_ctx
 } & BaseSource
 
 export type ImageSourceOption = {

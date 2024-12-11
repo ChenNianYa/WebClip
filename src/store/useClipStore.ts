@@ -74,7 +74,7 @@ const useClipStore = defineStore('clip', () => {
         const ctx = canvas.getContext('2d')
         if (!ctx) return
         previewCanvasManager.value.reset()
-        // 后面可以合并成一个循环。。再看吧
+        // 后面可以合并成一个循环。。再看吧 ? 用dom取代html做编辑？找某个时间的一帧或许时间可能比较长
         for (const video of elements.value.videos) {
             if (!elementInPreview(video, time)) {
                 if (previewCanvasManager.value.activeElement?.id === video.id) {
@@ -83,26 +83,26 @@ const useClipStore = defineStore('clip', () => {
                 continue
             }
             // ctx.clearRect(0, 0, canvas.width, canvas.height)
-            video.source.video.width = video.width
-            video.source.video.height = video.height
-            if (time !== video.source.video.currentTime || (video.source.video.readyState <= HTMLMediaElement.HAVE_CURRENT_DATA)) {
-                const canPlayPromise = new Promise((resolve) => {
-                    video.source.video.addEventListener('canplay', () => {
-                        resolve(true)
-                    })
-                    video.source.video.addEventListener('timeupdate', () => {
-                        resolve(true)
-                    })
-                })
-                video.source.video.currentTime = time
-                await canPlayPromise
-            }
-            video.source.video.currentTime = time
-            canvas.width = video.width
-            canvas.height = video.height
-            ctx.drawImage(video.source.video, 0, 0, video.width, video.height)
-            const imbp = canvas.transferToImageBitmap()
-            previewCanvasManager.value.addElement(new CanvasElement(video.id, imbp, video.width, video.height, video.x, video.y))
+            // video.source.video.width = video.width
+            // video.source.video.height = video.height
+            // if (time !== video.source.video.currentTime || (video.source.video.readyState <= HTMLMediaElement.HAVE_CURRENT_DATA)) {
+            //     const canPlayPromise = new Promise((resolve) => {
+            //         video.source.video.addEventListener('canplay', () => {
+            //             resolve(true)
+            //         })
+            //         video.source.video.addEventListener('timeupdate', () => {
+            //             resolve(true)
+            //         })
+            //     })
+            //     video.source.video.currentTime = time
+            //     await canPlayPromise
+            // }
+            // video.source.video.currentTime = time
+            // canvas.width = video.width
+            // canvas.height = video.height
+            // ctx.drawImage(video.source.video, 0, 0, video.width, video.height)
+            // const imbp = canvas.transferToImageBitmap()
+            // previewCanvasManager.value.addElement(new CanvasElement(video.id, imbp, video.width, video.height, video.x, video.y))
         }
         for (const image of elements.value.images) {
             console.log(image);
@@ -123,13 +123,12 @@ const useClipStore = defineStore('clip', () => {
             previewCanvasManager.value.addElement(new CanvasElement(image.id, imbp, image.width, image.height, image.x, image.y))
         }
     }
-    // preview 预览函数  这里后面准备用html预览。  如果用canvas 逻辑写起来感觉会很复杂，而且会有bug感觉卡顿感也会强烈 用html就会刚刚好  canvas调整  html预览
+    // preview 预览函数  这个地方还是的用html的播放器或者xg播放器获取画面，因为整个文件是流式的，按顺序找后面的太慢了
     const preview = () => {
         playState.value = true
     }
     const pause = () => {
         playState.value = false
-
     }
     const exportVideo = async () => {
         // 核心值得单独写   utils/mux里

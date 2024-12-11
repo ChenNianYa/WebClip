@@ -1,5 +1,6 @@
 import { VideoSourceOption } from "@/types/source-option-types";
 import BaseSource from "./BaseSource";
+import LibAV from "libav.js";
 
 class VideoSource extends BaseSource {
     id!: number
@@ -8,16 +9,22 @@ class VideoSource extends BaseSource {
     src!: string
     width!: number
     height!: number
-    video!: HTMLVideoElement
+    videoStreamIndex!: number
+    audioStreamIndex!: number
+    streams!: LibAV.Stream[]
+    fc!: number
     constructor(option: VideoSourceOption) {
         super(option)
         this.duration = option.duration
         this.cover = option.cover
         this.src = option.src
-        this.id = BaseSource._id
         this.width = option.width
         this.height = option.height
-        this.video = option.video
+        this.videoStreamIndex = option.videoStreamIndex
+        this.audioStreamIndex = option.audioStreamIndex
+        this.streams = option.streams
+        this.fc = option.fc
+        this.id = BaseSource._id
         BaseSource._id++
     }
 }

@@ -11,6 +11,12 @@ importers:
       '@element-plus/icons-vue':
         specifier: ^2.3.1
         version: 2.3.1(vue@3.5.13(typescript@5.6.3))
+      '@ffmpeg/ffmpeg':
+        specifier: ^0.12.10
+        version: 0.12.10
+      '@ffmpeg/util':
+        specifier: ^0.12.1
+        version: 0.12.1
       '@vueuse/core':
         specifier: ^11.3.0
         version: 11.3.0(vue@3.5.13(typescript@5.6.3))
@@ -23,6 +29,12 @@ importers:
       element-plus:
         specifier: ^2.8.8
         version: 2.8.8(vue@3.5.13(typescript@5.6.3))
+      libav.js:
+        specifier: ^6.4.7
+        version: 6.4.7
+      libavjs-webcodecs-bridge:
+        specifier: ^0.3.0
+        version: 0.3.0
       mp4-muxer:
         specifier: ^5.1.5
         version: 5.1.5
@@ -35,6 +47,9 @@ importers:
       vue:
         specifier: ^3.5.12
         version: 3.5.13(typescript@5.6.3)
+      web-demuxer:
+        specifier: ^2.3.2
+        version: 2.3.2
     devDependencies:
       '@types/dom-webcodecs':
         specifier: ^0.1.13
@@ -242,6 +257,18 @@ packages:
     engines: {node: '>=12'}
     cpu: [x64]
     os: [win32]
+
+  '@ffmpeg/ffmpeg@0.12.10':
+    resolution: {integrity: sha512-lVtk8PW8e+NUzGZhPTWj2P1J4/NyuCrbDD3O9IGpSeLYtUZKBqZO8CNj1WYGghep/MXoM8e1qVY1GztTkf8YYQ==}
+    engines: {node: '>=18.x'}
+
+  '@ffmpeg/types@0.12.2':
+    resolution: {integrity: sha512-NJtxwPoLb60/z1Klv0ueshguWQ/7mNm106qdHkB4HL49LXszjhjCCiL+ldHJGQ9ai2Igx0s4F24ghigy//ERdA==}
+    engines: {node: '>=16.x'}
+
+  '@ffmpeg/util@0.12.1':
+    resolution: {integrity: sha512-10jjfAKWaDyb8+nAkijcsi9wgz/y26LOc1NKJradNMyCIl6usQcBbhkjX5qhALrSBcOy6TOeksunTYa+a03qNQ==}
+    engines: {node: '>=18.x'}
 
   '@floating-ui/core@1.6.8':
     resolution: {integrity: sha512-7XJ9cPU+yI2QeLS+FCSlqNFZJq8arvswefkZrYI1yQBbftw6FyrZOxYSh+9S7z7TpeWlRt9zJ5IhM1WIL334jA==}
@@ -755,6 +782,12 @@ packages:
   js-tokens@9.0.0:
     resolution: {integrity: sha512-WriZw1luRMlmV3LGJaR6QOJjWwgLUTf89OwT2lUOyjX2dJGBwgmIkbcz+7WFZjrZM635JOIR517++e/67CP9dQ==}
 
+  libav.js@6.4.7:
+    resolution: {integrity: sha512-BRFs/ITgNepKDo658/riCl/HJR8vBOW+Eb5rJNy66m5o90coQlh93vQiIoqSW2e/urz2M4x87T45CRtjB2UA4Q==}
+
+  libavjs-webcodecs-bridge@0.3.0:
+    resolution: {integrity: sha512-+qDkkKYfo2jv2VaHcF9ju146zJXbWSihlvc9k1JJLiHv4mlkMfEBex2Eu9vNJ3gd2orFnLNOqy4dstGMkE58rg==}
+
   lilconfig@2.1.0:
     resolution: {integrity: sha512-utWOt/GHzuUxnLKxB6dk81RoOeoNeHgbrXiuGk4yyF5qlRz+iIVWu56E2fqGHFrXz0QNUhLB/8nKqvRH66JKGQ==}
     engines: {node: '>=10'}
@@ -1156,6 +1189,10 @@ packages:
       typescript:
         optional: true
 
+  web-demuxer@2.3.2:
+    resolution: {integrity: sha512-U3xsb7q/bsC0QyG65snhTGvSvM1E/V4yz0jcHAWA5ORBU52MI2TooPBwrKusGDv+8kx1Ic4xTB4eNM3x9l55Pw==}
+    engines: {node: '>=18', pnpm: '>=8'}
+
   webpack-virtual-modules@0.6.2:
     resolution: {integrity: sha512-66/V2i5hQanC51vBQKPH4aI8NMAcBW59FVBs+rC7eGHupMyfn34q7rZIE+ETlJ+XTevqfUhVVBgSUNSW2flEUQ==}
 
@@ -1270,6 +1307,14 @@ snapshots:
 
   '@esbuild/win32-x64@0.21.5':
     optional: true
+
+  '@ffmpeg/ffmpeg@0.12.10':
+    dependencies:
+      '@ffmpeg/types': 0.12.2
+
+  '@ffmpeg/types@0.12.2': {}
+
+  '@ffmpeg/util@0.12.1': {}
 
   '@floating-ui/core@1.6.8':
     dependencies:
@@ -1792,6 +1837,10 @@ snapshots:
 
   js-tokens@9.0.0: {}
 
+  libav.js@6.4.7: {}
+
+  libavjs-webcodecs-bridge@0.3.0: {}
+
   lilconfig@2.1.0: {}
 
   lilconfig@3.1.2: {}
@@ -2187,6 +2236,8 @@ snapshots:
       '@vue/shared': 3.5.13
     optionalDependencies:
       typescript: 5.6.3
+
+  web-demuxer@2.3.2: {}
 
   webpack-virtual-modules@0.6.2: {}
 

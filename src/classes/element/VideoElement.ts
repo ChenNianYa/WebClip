@@ -5,6 +5,7 @@ import { VideoElementOption } from "@/types/element-option-types";
 class VideoElement extends BaseElement {
     source!: VideoSource
     muted = false
+    clips = []
     constructor(option: VideoElementOption) {
         option.duration = option.source.duration
         super(option)
