@@ -36,12 +36,10 @@ const getVideoSource = async (videoBlob: File) => {
                     duration: streams[libav.AVMEDIA_TYPE_VIDEO].duration,
                     src: URL.createObjectURL(videoBlob),
                     cover: URL.createObjectURL(blob),
-                    streams: streams,
                     videoStreamIndex: videoStreamIndex,
                     audioStreamIndex: audioStreamIndex,
                     width: v.displayWidth,
                     height: v.displayHeight,
-                    fc
                 })
                 videoStore.addVideoSource(videoSource)
             }
@@ -55,7 +53,6 @@ const getVideoSource = async (videoBlob: File) => {
     const pkt = await libav.av_packet_alloc();
     while (findFirstFrame) {
         const [res, packets] = await libav.ff_read_frame_multi(fc, pkt, { limit: 1 })
-        console.log(res);
         if (res !== -libav.EAGAIN && res !== 0 && res !== libav.AVERROR_EOF) {
             libav.av_packet_free(pkt)
             break;

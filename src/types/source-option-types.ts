@@ -13,10 +13,8 @@ export type VideoSourceOption = {
     src: string
     width: number
     height: number
-    streams: LibAV.Stream[]
     videoStreamIndex: number,
     audioStreamIndex: number,
-    fc: number // format_ctx
 } & BaseSource
 
 export type ImageSourceOption = {

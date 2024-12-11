@@ -49,21 +49,7 @@ const muxMP4 = async () => {
         },
         error: e => console.error(e)
     });
-    videoEncoder.addEventListener('dequeue', async (e) => {
-        // console.log(e);
-        if (videoEncoder.encodeQueueSize === 0 && endDecoder) {
-            encoderOver = true
-            console.log(encoderOver);
-            requestAnimationFrame(async () => {
-                videoEncoder.close()
-                muxer.finalize();
-                await writableStream.close()
-                console.log('over');
-            })
 
-
-        }
-    })
     videoEncoder.configure({
         codec: 'avc1.4D0032',
         width: clipStore.width,
@@ -72,15 +58,14 @@ const muxMP4 = async () => {
     });
     for (const video of clipStore.elements.videos) {
         let count = 0
-        const { videoStreamIndex, streams, fc, name } = video.source
+        const { videoStreamIndex, name } = video.source
+        const [fc, streams] = await libav.ff_init_demuxer_file(name)
         // await libav.mkreadaheadfile(video.source.name, video.source.file)
         // libav.readFile(video.source.name)
         const config = await videoStreamToConfig(libav, streams[videoStreamIndex])
 
         const decoder = new VideoDecoder({
             output: async (v) => {
-                console.log(v);
-
                 const frame = new VideoFrame(await createImageBitmap(v), { timestamp: count * 1000000 / 25 })
                 videoEncoder.encode(frame)
                 count++
@@ -89,17 +74,10 @@ const muxMP4 = async () => {
             },
             error: console.log
         })
-        decoder.addEventListener('dequeue', () => {
-            if (decoder.decodeQueueSize === 0) {
-                if (!endDecoder) {
-                    parserVideo()
-                }
-            }
-        })
         decoder.configure(config)
-        const rpkt = await libav.av_packet_alloc();
         const findBeastStartFrame = async () => {
             const rpkt = await libav.av_packet_alloc();
+            // libav.av_frame
             const [res, packets] = await libav.ff_read_frame_multi(fc, rpkt, { limit: 1024 * 1024 * 100 })
             let bestPts = 0;
             for (const pkt of packets[video.source.videoStreamIndex]) {
@@ -128,25 +106,47 @@ const muxMP4 = async () => {
         }
         const bestPts = await findBeastStartFrame()
         console.log(bestPts);
+        libav.av_read_frame
         const mpkt = await libav.av_packet_alloc();
         const [fc2, streams2] = await libav.ff_init_demuxer_file(name)
         const parserVideo = async () => {
-            const [res, packets] = await libav.ff_read_frame_multi(fc2, mpkt, { limit: 1024 * 1024 * 100 })
+            let pts = 0;
+            const [res, packets] = await libav.ff_read_frame_multi(fc2, mpkt, { limit: 1024 * 1024 })
             for (const pkt of packets[video.source.videoStreamIndex]) {
+                pts = pkt.pts ?? 0
                 if (pkt.pts && pkt.time_base_den) {
                     const pktTime = pkt.pts / pkt.time_base_den
-                    if (pkt.pts >= bestPts && pktTime < 40) {
+                    if (pkt.pts >= bestPts && pktTime < 3600) {
                         const encodedVideoChunk = packetToEncodedVideoChunk(pkt, streams2[videoStreamIndex])
                         decoder.decode(encodedVideoChunk)
-                    } else if (pktTime > 40) {
+                    } else if (pktTime > 3600) {
                         endDecoder = true
                         // libav.av_packet_free(rpkt)
                     }
                 }
-
+            }
+            if (pts < bestPts) {
+                parserVideo()
             }
         }
         parserVideo()
+        videoEncoder.addEventListener('dequeue', async (e) => {
+            // console.log(e);
+            if (videoEncoder.encodeQueueSize === 0) {
+                if (endDecoder) {
+                    encoderOver = true
+                    requestAnimationFrame(async () => {
+                        videoEncoder.close()
+                        muxer.finalize();
+                        await writableStream.close()
+                        console.log('over');
+                    })
+                } else {
+                    console.log('parserVideo');
+                    parserVideo()
+                }
+            }
+        })
     }
 
 }
