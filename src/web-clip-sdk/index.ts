@@ -7,7 +7,3 @@ export const loadLibav = async () => {
         toImport: '/public/libav/dist/libav-6.4.7.1-webcodecs-avf.wasm.js'
     });
 }
-// 在libav中注册该视频
-export const registerAV = async (file: File) => {
-    await libav.mkreadaheadfile(file.name, file)
-}

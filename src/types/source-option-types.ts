@@ -1,4 +1,3 @@
-import LibAV from "libav.js"
 import BaseSource from "../classes/source/BaseSource"
 
 export interface BaseSourceOption {
@@ -15,6 +14,8 @@ export type VideoSourceOption = {
     height: number
     videoStreamIndex: number,
     audioStreamIndex: number,
+    videoDecoderConfig: VideoDecoderConfig
+    audioDecoderConfig: AudioDecoderConfig,
 } & BaseSource
 
 export type ImageSourceOption = {

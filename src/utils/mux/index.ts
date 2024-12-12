@@ -1,5 +1,6 @@
 import useClipStore from "@/store/useClipStore";
 import { libav } from "@/web-clip-sdk";
+import { clipAv } from "@/web-clip-sdk/clip";
 import { packetToEncodedVideoChunk, videoStreamToConfig } from "libavjs-webcodecs-bridge";
 import { FileSystemWritableFileStreamTarget, Muxer } from "mp4-muxer";
 // 获取可写入文件流 最后用来流式 的存入本地文件中
@@ -37,116 +38,18 @@ const muxMP4 = async () => {
             codec: 'avc',
             width: clipStore.width,
             height: clipStore.height,
-            frameRate: clipStore.frameRate
+        },
+        audio: {
+            codec: 'aac',
+            numberOfChannels: clipStore.elements.videos[0].source.audioDecoderConfig.numberOfChannels,
+            sampleRate: clipStore.elements.videos[0].source.audioDecoderConfig.sampleRate
         },
         fastStart: false
     })
-    let endDecoder = false
-    let encoderOver = false
-    const videoEncoder = new VideoEncoder({
-        output: (chunk, meta) => {
-            muxer.addVideoChunk(chunk, meta)
-        },
-        error: e => console.error(e)
-    });
-
-    videoEncoder.configure({
-        codec: 'avc1.4D0032',
-        width: clipStore.width,
-        height: clipStore.height,
-        hardwareAcceleration: 'prefer-software'
-    });
     for (const video of clipStore.elements.videos) {
-        let count = 0
-        const { videoStreamIndex, name } = video.source
-        const [fc, streams] = await libav.ff_init_demuxer_file(name)
-        // await libav.mkreadaheadfile(video.source.name, video.source.file)
-        // libav.readFile(video.source.name)
-        const config = await videoStreamToConfig(libav, streams[videoStreamIndex])
-
-        const decoder = new VideoDecoder({
-            output: async (v) => {
-                const frame = new VideoFrame(await createImageBitmap(v), { timestamp: count * 1000000 / 25 })
-                videoEncoder.encode(frame)
-                count++
-                frame.close()
-                v.close()
-            },
-            error: console.log
-        })
-        decoder.configure(config)
-        const findBeastStartFrame = async () => {
-            const rpkt = await libav.av_packet_alloc();
-            // libav.av_frame
-            const [res, packets] = await libav.ff_read_frame_multi(fc, rpkt, { limit: 1024 * 1024 * 100 })
-            let bestPts = 0;
-            for (const pkt of packets[video.source.videoStreamIndex]) {
-                if (pkt.pts && pkt.time_base_den) {
-                    const pktTime = pkt.pts / pkt.time_base_den
-                    const encodedVideoChunk = packetToEncodedVideoChunk(pkt, streams[videoStreamIndex])
-                    if (encodedVideoChunk.type === 'key') {
-                        if (pktTime < 30) {
-                            bestPts = pkt.pts
-                        } else if (pktTime > 30) {
-                            if ((pktTime - 30) < (30 - bestPts / pkt.time_base_den)) {
-                                bestPts = pkt.pts
-                                libav.av_packet_free(rpkt)
-                                return bestPts
-                            }
-                        }
-                    }
-                    // if (encodedVideoChunk.type === 'key') {
-
-                    // }
-                }
-
-            }
-            libav.av_packet_free(rpkt)
-            return bestPts
-        }
-        const bestPts = await findBeastStartFrame()
-        console.log(bestPts);
-        libav.av_read_frame
-        const mpkt = await libav.av_packet_alloc();
-        const [fc2, streams2] = await libav.ff_init_demuxer_file(name)
-        const parserVideo = async () => {
-            let pts = 0;
-            const [res, packets] = await libav.ff_read_frame_multi(fc2, mpkt, { limit: 1024 * 1024 })
-            for (const pkt of packets[video.source.videoStreamIndex]) {
-                pts = pkt.pts ?? 0
-                if (pkt.pts && pkt.time_base_den) {
-                    const pktTime = pkt.pts / pkt.time_base_den
-                    if (pkt.pts >= bestPts && pktTime < 3600) {
-                        const encodedVideoChunk = packetToEncodedVideoChunk(pkt, streams2[videoStreamIndex])
-                        decoder.decode(encodedVideoChunk)
-                    } else if (pktTime > 3600) {
-                        endDecoder = true
-                        // libav.av_packet_free(rpkt)
-                    }
-                }
-            }
-            if (pts < bestPts) {
-                parserVideo()
-            }
-        }
-        parserVideo()
-        videoEncoder.addEventListener('dequeue', async (e) => {
-            // console.log(e);
-            if (videoEncoder.encodeQueueSize === 0) {
-                if (endDecoder) {
-                    encoderOver = true
-                    requestAnimationFrame(async () => {
-                        videoEncoder.close()
-                        muxer.finalize();
-                        await writableStream.close()
-                        console.log('over');
-                    })
-                } else {
-                    console.log('parserVideo');
-                    parserVideo()
-                }
-            }
-        })
+        video.clips = [[10, 20], [40, 50], [70, 90], [120, 140], [300, 400]]
+        // video.clips = [[10, 20]]
+        clipAv(libav, video, muxer, writableStream)
     }
 
 }

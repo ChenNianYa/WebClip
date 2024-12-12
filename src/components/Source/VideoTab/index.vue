@@ -7,7 +7,7 @@ import VideoElement from '@/classes/element/VideoElement';
 import VideoSource from '@/classes/source/VideoSource';
 import useVideoStore from '@/store/useVideoStore';
 import { libav } from '@/web-clip-sdk';
-import { packetToEncodedVideoChunk, videoStreamToConfig } from 'libavjs-webcodecs-bridge';
+import { audioStreamToConfig, packetToEncodedVideoChunk, videoStreamToConfig } from 'libavjs-webcodecs-bridge';
 const videoStore = useVideoStore()
 const drawCoverCanvas = new OffscreenCanvas(1920, 1080)
 const drawCoverCanvasCtx = drawCoverCanvas.getContext('2d')
@@ -17,7 +17,11 @@ const getVideoSource = async (videoBlob: File) => {
     const [fc, streams] = await libav.ff_init_demuxer_file(videoBlob.name)
     const videoStreamIndex = streams.findIndex(v => v.codec_type === libav.AVMEDIA_TYPE_VIDEO)
     const audioStreamIndex = streams.findIndex(v => v.codec_type === libav.AVMEDIA_TYPE_AUDIO)
-    const config = await videoStreamToConfig(libav, streams[videoStreamIndex])
+    const videoDecoderConfig = await videoStreamToConfig(libav, streams[videoStreamIndex])
+    const audioDecoderConfig = await audioStreamToConfig(libav, streams[audioStreamIndex])
+    console.log(audioDecoderConfig, streams);
+
+    // streams[audioStreamIndex].
     let findFirstFrame = true
     const videoDecoder = new VideoDecoder({
         output: async (v) => {
@@ -40,6 +44,8 @@ const getVideoSource = async (videoBlob: File) => {
                     audioStreamIndex: audioStreamIndex,
                     width: v.displayWidth,
                     height: v.displayHeight,
+                    videoDecoderConfig: videoDecoderConfig,
+                    audioDecoderConfig: audioDecoderConfig,
                 })
                 videoStore.addVideoSource(videoSource)
             }
@@ -49,7 +55,7 @@ const getVideoSource = async (videoBlob: File) => {
             console.log(e);
         }
     })
-    videoDecoder.configure(config)
+    videoDecoder.configure(videoDecoderConfig)
     const pkt = await libav.av_packet_alloc();
     while (findFirstFrame) {
         const [res, packets] = await libav.ff_read_frame_multi(fc, pkt, { limit: 1 })
